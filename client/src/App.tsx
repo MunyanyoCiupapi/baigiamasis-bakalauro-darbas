@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Player from './components/Player';
+import Home from './pages/Home';
+import Artists from './pages/Artists';
+import type { Song } from './types';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/songs')
+      .then((r) => r.json())
+      .then((data: Song[]) => setSongs(data))
+      .catch(() => {});
+  }, []);
+
+  const currentIndex = songs.findIndex((s) => s.id === currentSong?.id);
+
+  const handlePrev = () => {
+    if (currentIndex > 0) setCurrentSong(songs[currentIndex - 1]);
+  };
+
+  const handleNext = () => {
+    if (currentIndex < songs.length - 1) setCurrentSong(songs[currentIndex + 1]);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <BrowserRouter>
+      <div className="app">
+        <Header />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home onPlay={setCurrentSong} currentSong={currentSong} />} />
+            <Route path="/artists" element={<Artists />} />
+          </Routes>
+        </main>
+        <Player
+          currentSong={currentSong}
+          songs={songs}
+          onPrev={handlePrev}
+          onNext={handleNext}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> aaaaaa
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
