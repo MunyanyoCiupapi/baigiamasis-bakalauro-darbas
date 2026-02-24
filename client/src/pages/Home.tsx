@@ -11,7 +11,7 @@ export default function Home({ onPlay, currentSong }: HomeProps) {
     <div className="page">
       <div className="welcome">
         <h1>Welcome to <span className="accent">Melodify</span></h1>
-        <p>Discover and enjoy your favourite music.</p>
+        <p>Discover and enjoy your favorite music.</p>
       </div>
       <h2 className="section-title">All Songs</h2>
       <SongList onPlay={onPlay} currentSong={currentSong} />

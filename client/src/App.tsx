@@ -15,7 +15,7 @@ function App() {
     fetch('http://localhost:3000/songs')
       .then((r) => r.json())
       .then((data: Song[]) => setSongs(data))
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch songs:', err));
   }, []);
 
   const currentIndex = songs.findIndex((s) => s.id === currentSong?.id);
