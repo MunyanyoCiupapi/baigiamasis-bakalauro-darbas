@@ -11,3 +11,85 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  USER
+  ARTIST
+}
+
+enum AssetType {
+  TRACK
+  LOOP
+  SAMPLE
+}
+
+enum LicenseCode {
+  PERSONAL
+  COMMERCIAL
+  UNLIMITED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  role         UserRole @default(USER)
+
+  assets Asset[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Asset {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  type        AssetType
+  genre       String?
+
+  bpm         Int?
+  musicalKey  String?
+  durationSec Int?
+
+  fileUrl  String
+  coverUrl String?
+
+  artistId String
+  artist   User   @relation(fields: [artistId], references: [id])
+
+  licenses AssetLicense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([artistId])
+  @@index([type])
+}
+
+model License {
+  id          String      @id @default(uuid())
+  code        LicenseCode @unique
+  name        String
+  description String?
+
+  assets AssetLicense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AssetLicense {
+  id         String @id @default(uuid())
+  assetId    String
+  licenseId  String
+  priceCents Int
+
+  asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  license License @relation(fields: [licenseId], references: [id])
+
+  @@unique([assetId, licenseId])
+  @@index([assetId])
+  @@index([licenseId])
+}
