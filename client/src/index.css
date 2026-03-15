@@ -119,6 +119,36 @@ a {
   color: #fff;
 }
 
+.user-nav-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.user-nav-name {
+  color: #dbeafe;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.logout-button {
+  width: auto;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.18);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.logout-button:hover {
+  background: rgba(239, 68, 68, 0.28);
+  transform: translateY(-1px);
+}
+
 .home-page {
   padding-top: 28px;
 }
@@ -198,6 +228,24 @@ a {
 .primary-link-button:hover,
 .secondary-link-button:hover {
   transform: translateY(-1px);
+}
+
+.welcome-box {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: 420px;
+}
+
+.welcome-box h3 {
+  margin: 0 0 8px;
+}
+
+.welcome-box p {
+  margin: 0;
+  color: #cbd5e1;
 }
 
 .hero-card {

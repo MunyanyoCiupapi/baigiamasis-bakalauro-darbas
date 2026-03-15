@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../api/authApi';
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
+
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,10 +26,10 @@ export default function RegisterPage() {
       });
 
       setMessage(result.message || 'Registracija sėkminga');
-      setDisplayName('');
-      setEmail('');
-      setPassword('');
-      setRole('USER');
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 800);
     } catch (err: any) {
       setError(err.message || 'Įvyko klaida');
     }

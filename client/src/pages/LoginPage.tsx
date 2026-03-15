@@ -1,15 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/authApi';
+import { saveAuth } from '../utils/auth';
 
 type LoggedUser = {
   id: string;
   email: string;
   displayName: string;
-  role: string;
+  role: 'USER' | 'ARTIST';
   createdAt: string;
 };
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -24,8 +28,16 @@ export default function LoginPage() {
 
     try {
       const result = await loginUser({ email, password });
+
+      saveAuth(result.accessToken, result.user);
+
       setMessage(result.message || 'Prisijungimas sėkmingas');
       setUser(result.user);
+
+      setTimeout(() => {
+        navigate('/');
+        window.location.reload();
+      }, 700);
     } catch (err: any) {
       setError(err.message || 'Įvyko klaida');
     }
@@ -62,15 +74,6 @@ export default function LoginPage() {
 
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
-
-        {user && (
-          <div className="user-box">
-            <h3>Prisijungęs vartotojas</h3>
-            <p><strong>Vardas:</strong> {user.displayName}</p>
-            <p><strong>El. paštas:</strong> {user.email}</p>
-            <p><strong>Rolė:</strong> {user.role}</p>
-          </div>
-        )}
       </div>
     </div>
   );

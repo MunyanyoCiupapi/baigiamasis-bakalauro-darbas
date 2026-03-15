@@ -1,18 +1,98 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
 
-describe('AuthService', () => {
-  let service: AuthService;
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService],
-    }).compile();
+  async register(body: any) {
+    const { email, password, displayName, role } = body;
 
-    service = module.get<AuthService>(AuthService);
-  });
+    if (!email || !password || !displayName) {
+      throw new BadRequestException('Trūksta privalomų laukų');
+    }
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('Toks el. paštas jau naudojamas');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        displayName,
+        role: role === 'ARTIST' ? 'ARTIST' : 'USER',
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      message: 'Registracija sėkminga',
+      user,
+    };
+  }
+
+  async login(body: any) {
+    const { email, password } = body;
+
+    if (!email || !password) {
+      throw new BadRequestException('Trūksta el. pašto arba slaptažodžio');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Neteisingi prisijungimo duomenys');
+    }
+
+    const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Neteisingi prisijungimo duomenys');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      displayName: user.displayName,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    return {
+      message: 'Prisijungimas sėkmingas',
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    };
+  }
+}

@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import { getUser, isLoggedIn } from '../utils/auth';
 
 export default function HomePage() {
+  const loggedIn = isLoggedIn();
+  const user = getUser();
+
   return (
     <div className="home-page">
       <section className="hero-section">
@@ -8,22 +12,30 @@ export default function HomePage() {
           <span className="hero-badge">Muzikos prekybos platforma</span>
 
           <h1 className="hero-title">
-            Įkelk, parduok ir atrask <span className="gradient-text">beat’us, loop’us ir sample’us</span>
+            Įkelk, parduok ir atrask{' '}
+            <span className="gradient-text">beat’us, loop’us ir sample’us</span>
           </h1>
 
           <p className="hero-description">
-            Ši platforma leidžia atlikėjams talpinti savo muzikinius kūrinius, nustatyti licencijų kainas
-            ir parduoti turinį pirkėjams vienoje vietoje.
+            Platforma skirta atlikėjams ir pirkėjams. Čia galėsi talpinti muzikinius
+            kūrinius, priskirti licencijas ir valdyti savo turinį vienoje vietoje.
           </p>
 
-          <div className="hero-actions">
-            <Link to="/register" className="primary-link-button">
-              Pradėti dabar
-            </Link>
-            <Link to="/login" className="secondary-link-button">
-              Prisijungti
-            </Link>
-          </div>
+          {loggedIn && user ? (
+            <div className="welcome-box">
+              <h3>Sveikas sugrįžęs, {user.displayName}!</h3>
+              <p>Prisijungta kaip: {user.role}</p>
+            </div>
+          ) : (
+            <div className="hero-actions">
+              <Link to="/register" className="primary-link-button">
+                Pradėti dabar
+              </Link>
+              <Link to="/login" className="secondary-link-button">
+                Prisijungti
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="hero-card">

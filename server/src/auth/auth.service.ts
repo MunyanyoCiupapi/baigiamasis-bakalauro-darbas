@@ -4,11 +4,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async register(body: any) {
     const { email, password, displayName, role } = body;
@@ -70,8 +74,18 @@ export class AuthService {
       throw new UnauthorizedException('Neteisingi prisijungimo duomenys');
     }
 
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      displayName: user.displayName,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
+
     return {
       message: 'Prisijungimas sėkmingas',
+      accessToken,
       user: {
         id: user.id,
         email: user.email,
