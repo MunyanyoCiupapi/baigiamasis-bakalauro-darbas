@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AssetsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(body: any, currentUser: any) {
+  async create(body: any, currentUser: any, files: any) {
     const {
       title,
       description,
@@ -14,17 +18,34 @@ export class AssetsService {
       bpm,
       musicalKey,
       durationSec,
-      fileUrl,
-      coverUrl,
       prices,
     } = body;
 
-    if (!title || !type || !fileUrl) {
+    if (!title || !type) {
       throw new BadRequestException('Trūksta privalomų laukų');
     }
 
-    if (!prices || !Array.isArray(prices) || prices.length === 0) {
+    const audioFile = files?.audio?.[0];
+    const coverFile = files?.cover?.[0];
+
+    if (!audioFile) {
+      throw new BadRequestException('Audio failas yra privalomas');
+    }
+
+    if (!prices) {
       throw new BadRequestException('Reikia pateikti licencijų kainas');
+    }
+
+    let parsedPrices: { code: string; priceCents: number }[];
+
+    try {
+      parsedPrices = typeof prices === 'string' ? JSON.parse(prices) : prices;
+    } catch {
+      throw new BadRequestException('Neteisingas prices formatas');
+    }
+
+    if (!Array.isArray(parsedPrices) || parsedPrices.length === 0) {
+      throw new BadRequestException('Licencijų kainos turi būti masyvas');
     }
 
     const licenses = await this.prisma.license.findMany();
@@ -33,22 +54,25 @@ export class AssetsService {
       throw new BadRequestException('Sistemoje nėra licencijų');
     }
 
+    const fileUrl = `/uploads/audio/${audioFile.filename}`;
+    const coverUrl = coverFile ? `/uploads/covers/${coverFile.filename}` : null;
+
     const asset = await this.prisma.asset.create({
       data: {
         title,
         description,
         type,
         genre,
-        bpm,
+        bpm: bpm ? Number(bpm) : null,
         musicalKey,
-        durationSec,
+        durationSec: durationSec ? Number(durationSec) : null,
         fileUrl,
         coverUrl,
         artistId: currentUser.userId,
       },
     });
 
-    for (const priceItem of prices) {
+    for (const priceItem of parsedPrices) {
       const license = licenses.find((l) => l.code === priceItem.code);
 
       if (!license) {
@@ -59,7 +83,7 @@ export class AssetsService {
         data: {
           assetId: asset.id,
           licenseId: license.id,
-          priceCents: priceItem.priceCents,
+          priceCents: Number(priceItem.priceCents),
         },
       });
     }

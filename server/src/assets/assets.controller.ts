@@ -1,6 +1,24 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AssetsService } from './assets.service';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+
+function generateFileName(originalName: string) {
+  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+  return `${uniqueSuffix}${extname(originalName)}`;
+}
 
 @Controller('assets')
 export class AssetsController {
@@ -8,8 +26,40 @@ export class AssetsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() body: any, @Req() req: any) {
-    return this.assetsService.create(body, req.user);
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'audio', maxCount: 1 },
+        { name: 'cover', maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            if (file.fieldname === 'audio') {
+              cb(null, './uploads/audio');
+            } else if (file.fieldname === 'cover') {
+              cb(null, './uploads/covers');
+            } else {
+              cb(null, './uploads');
+            }
+          },
+          filename: (req, file, cb) => {
+            cb(null, generateFileName(file.originalname));
+          },
+        }),
+      },
+    ),
+  )
+  create(
+    @UploadedFiles()
+    files: {
+      audio?: Express.Multer.File[];
+      cover?: Express.Multer.File[];
+    },
+    @Body() body: any,
+    @Req() req: any,
+  ) {
+    return this.assetsService.create(body, req.user, files);
   }
 
   @Get()
