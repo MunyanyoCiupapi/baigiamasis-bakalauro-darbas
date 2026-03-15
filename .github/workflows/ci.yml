@@ -7,7 +7,6 @@ on:
     branches: [main, develop]
 
 jobs:
-
   server:
     runs-on: ubuntu-latest
 
@@ -19,28 +18,29 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
 
-      - name: Install dependencies
+      - name: Install server dependencies
         run: npm ci
 
       - name: Prisma validate
-        run: npx prisma validate
+        run: npx prisma validate --schema=./prisma/schema.prisma
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          DATABASE_URL: postgresql://test:test@localhost:5432/test?schema=public
           JWT_SECRET: testsecret
           JWT_EXPIRES_IN: 7d
 
       - name: Build server
         run: npm run build
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          DATABASE_URL: postgresql://test:test@localhost:5432/test?schema=public
           JWT_SECRET: testsecret
           JWT_EXPIRES_IN: 7d
-
 
   client:
     runs-on: ubuntu-latest
@@ -53,12 +53,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
 
-      - name: Install dependencies
+      - name: Install client dependencies
         run: npm ci
 
       - name: Build client
