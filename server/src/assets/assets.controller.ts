@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -14,6 +15,7 @@ import { AssetsService } from './assets.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { ArtistOnlyGuard } from '../auth/roles.guard';
 
 function generateFileName(originalName: string) {
   const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
@@ -24,7 +26,7 @@ function generateFileName(originalName: string) {
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ArtistOnlyGuard)
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -70,5 +72,11 @@ export class AssetsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.assetsService.findOne(id);
+  }
+
+  @UseGuards(JwtAuthGuard, ArtistOnlyGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.assetsService.remove(id, req.user);
   }
 }

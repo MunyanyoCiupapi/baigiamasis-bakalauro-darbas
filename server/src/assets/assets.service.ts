@@ -140,4 +140,29 @@ export class AssetsService {
 
     return asset;
   }
+
+  async remove(id: string, currentUser: any) {
+    const asset = await this.prisma.asset.findUnique({
+      where: { id },
+    });
+
+    if (!asset) {
+      throw new NotFoundException('Asset nerastas');
+    }
+
+    if (asset.artistId !== currentUser.userId) {
+      throw new BadRequestException('Negalite ištrinti ne savo kūrinio');
+    }
+
+    await this.prisma.asset.delete({
+      where: { id },
+    });
+
+    return {
+      message: 'Kūrinys sėkmingai ištrintas',
+    };
+  }
+
+
+
 }

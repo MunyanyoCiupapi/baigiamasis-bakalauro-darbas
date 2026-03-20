@@ -20,12 +20,25 @@ export default function Navbar() {
         </Link>
 
         <nav className="nav-links">
-          <NavLink
-            to="/"
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-          >
-            Pagrindinis
-          </NavLink>
+          {loggedIn && (
+            <>
+              <NavLink
+                to="/"
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              >
+                Pagrindinis
+              </NavLink>
+
+              {user?.role === 'ARTIST' && (
+                <NavLink
+                  to="/upload"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Įkelti kūrinį
+                </NavLink>
+              )}
+            </>
+          )}
 
           {!loggedIn && (
             <>

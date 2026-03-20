@@ -2,9 +2,11 @@ import { Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import GuestRoute from './components/GuestRoute';
 import ProtectedRoute from './components/ProtectedRoute';
+import ArtistRoute from './components/ArtistRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import CreateAssetPage from './pages/CreateAssetPage';
 
 function App() {
   return (
@@ -24,6 +26,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/upload"
+            element={
+              <ArtistRoute>
+                <CreateAssetPage />
+              </ArtistRoute>
+            }
+          />
+
           <Route
             path="/login"
             element={
@@ -32,6 +44,7 @@ function App() {
               </GuestRoute>
             }
           />
+
           <Route
             path="/register"
             element={
