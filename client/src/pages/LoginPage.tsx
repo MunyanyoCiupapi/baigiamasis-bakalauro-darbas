@@ -3,14 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/authApi';
 import { saveAuth } from '../utils/auth';
 
-type LoggedUser = {
-  id: string;
-  email: string;
-  displayName: string;
-  role: 'USER' | 'ARTIST';
-  createdAt: string;
-};
-
 export default function LoginPage() {
   const navigate = useNavigate();
 
@@ -18,13 +10,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [user, setUser] = useState<LoggedUser | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
     setError('');
-    setUser(null);
 
     try {
       const result = await loginUser({ email, password });
@@ -32,7 +22,6 @@ export default function LoginPage() {
       saveAuth(result.accessToken, result.user);
 
       setMessage(result.message || 'Prisijungimas sėkmingas');
-      setUser(result.user);
 
       setTimeout(() => {
         navigate('/');
