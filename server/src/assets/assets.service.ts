@@ -133,6 +133,7 @@ export class AssetsService {
         },
       },
     });
+    
 
     if (!asset) {
       throw new NotFoundException('Asset nerastas');

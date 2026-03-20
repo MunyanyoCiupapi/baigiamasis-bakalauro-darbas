@@ -52,3 +52,22 @@ export async function deleteAsset(id: string) {
 
   return result;
 }
+
+export async function getAssetById(id: string) {
+  const token = getToken();
+
+  const response = await fetch(`http://localhost:3000/assets/${id}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Nepavyko gauti kūrinio');
+  }
+
+  return result;
+}

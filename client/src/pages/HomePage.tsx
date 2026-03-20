@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';  // Importuojame Link iš react-router-dom
 import { deleteAsset, getAssets } from '../api/assetsApi';
 import { getUser, isLoggedIn } from '../utils/auth';
 
@@ -179,62 +179,64 @@ export default function HomePage() {
 
                 return (
                   <div className="asset-card" key={asset.id}>
-                    {asset.coverUrl ? (
-                      <img
-                        src={`http://localhost:3000${asset.coverUrl}`}
-                        alt={asset.title}
-                        className="asset-cover"
-                      />
-                    ) : (
-                      <div className="asset-cover asset-cover-placeholder">
-                        Be cover
-                      </div>
-                    )}
-
-                    <div className="asset-card-body">
-                      <h3>{asset.title}</h3>
-
-                      <p className="asset-meta">
-                        {asset.type}
-                        {asset.genre ? ` · ${asset.genre}` : ''}
-                        {asset.bpm ? ` · ${asset.bpm} BPM` : ''}
-                        {asset.musicalKey ? ` · ${asset.musicalKey}` : ''}
-                      </p>
-
-                      <p className="asset-meta">
-                        Autorius: {asset.artist.displayName}
-                      </p>
-
-                      {asset.description && (
-                        <p className="asset-description">{asset.description}</p>
+                    <Link to={`/assets/${asset.id}`}>
+                      {asset.coverUrl ? (
+                        <img
+                          src={`http://localhost:3000${asset.coverUrl}`}
+                          alt={asset.title}
+                          className="asset-cover"
+                        />
+                      ) : (
+                        <div className="asset-cover asset-cover-placeholder">
+                          Be cover
+                        </div>
                       )}
 
-                      <audio
-                        controls
-                        className="asset-audio"
-                        src={`http://localhost:3000${asset.fileUrl}`}
-                      >
-                        Jūsų naršyklė nepalaiko audio elemento.
-                      </audio>
+                      <div className="asset-card-body">
+                        <h3>{asset.title}</h3>
 
-                      <div className="asset-prices">
-                        {asset.licenses.map((item) => (
-                          <div key={item.id} className="license-row">
-                            <span>{item.license.name}</span>
-                            <strong>{(item.priceCents / 100).toFixed(2)} €</strong>
-                          </div>
-                        ))}
-                      </div>
+                        <p className="asset-meta">
+                          {asset.type}
+                          {asset.genre ? ` · ${asset.genre}` : ''}
+                          {asset.bpm ? ` · ${asset.bpm} BPM` : ''}
+                          {asset.musicalKey ? ` · ${asset.musicalKey}` : ''}
+                        </p>
 
-                      {canDelete && (
-                        <button
-                          className="delete-button"
-                          onClick={() => handleDelete(asset.id)}
+                        <p className="asset-meta">
+                          Autorius: {asset.artist.displayName}
+                        </p>
+
+                        {asset.description && (
+                          <p className="asset-description">{asset.description}</p>
+                        )}
+
+                        <audio
+                          controls
+                          className="asset-audio"
+                          src={`http://localhost:3000${asset.fileUrl}`}
                         >
-                          Ištrinti
-                        </button>
-                      )}
-                    </div>
+                          Jūsų naršyklė nepalaiko audio elemento.
+                        </audio>
+
+                        <div className="asset-prices">
+                          {asset.licenses.map((item) => (
+                            <div key={item.id} className="license-row">
+                              <span>{item.license.name}</span>
+                              <strong>{(item.priceCents / 100).toFixed(2)} €</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </Link>
+
+                    {canDelete && (
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDelete(asset.id)}
+                      >
+                        Ištrinti
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -244,4 +246,4 @@ export default function HomePage() {
       )}
     </div>
   );
-}
+} 

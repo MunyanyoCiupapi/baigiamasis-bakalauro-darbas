@@ -653,3 +653,226 @@ button:hover {
 .info-text {
   color: #cbd5e1;
 }
+.asset-view-page {
+  width: 100%;
+  padding-top: 12px;
+}
+
+.asset-view-topbar {
+  margin-bottom: 20px;
+}
+
+.asset-view-hero {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+
+.asset-view-cover-wrap {
+  width: 100%;
+}
+
+.asset-view-cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.asset-view-main {
+  min-width: 0;
+}
+
+.asset-view-header {
+  margin-bottom: 18px;
+}
+
+.asset-view-kicker {
+  margin: 0 0 8px;
+  color: #93c5fd;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.asset-view-title {
+  margin: 0 0 10px;
+  font-size: 48px;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+
+.asset-view-artist {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 16px;
+}
+
+.asset-view-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.asset-tag {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #dbeafe;
+  font-size: 14px;
+}
+
+.asset-view-description-box,
+.asset-view-player-box,
+.asset-view-licenses-section {
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.asset-view-description-box {
+  padding: 22px;
+  margin-bottom: 20px;
+}
+
+.asset-view-description-box h3,
+.asset-view-player-box h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.asset-view-description-box p {
+  margin: 0;
+  color: #dbeafe;
+}
+
+.asset-view-player-box {
+  padding: 22px;
+}
+
+.asset-view-audio {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.asset-view-licenses-section {
+  padding: 24px;
+}
+
+.asset-license-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.asset-license-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.asset-license-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.asset-license-card-top h3 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.asset-license-code {
+  margin: 0;
+  color: #93c5fd;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.asset-license-price {
+  font-size: 24px;
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+}
+
+.asset-license-description {
+  margin-bottom: 16px;
+}
+
+.asset-license-description p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.asset-license-note {
+  margin-top: 10px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.buy-button {
+  width: auto;
+  min-width: 220px;
+  padding: 12px 18px;
+  margin-top: 0;
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  border-radius: 12px;
+}
+
+.buy-button:hover {
+  background: linear-gradient(135deg, #5b5ff0, #3277f0);
+}
+
+@media (max-width: 950px) {
+  .asset-view-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-view-title {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 680px) {
+  .asset-view-title {
+    font-size: 30px;
+  }
+
+  .asset-view-licenses-section,
+  .asset-view-description-box,
+  .asset-view-player-box {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .asset-license-card {
+    padding: 16px;
+  }
+
+  .asset-license-card-top {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .buy-button {
+    width: 100%;
+    min-width: 0;
+  }
+}

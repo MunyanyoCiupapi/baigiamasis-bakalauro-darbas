@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CreateAssetPage from './pages/CreateAssetPage';
+import AssetPage from './pages/AssetPage';
 
 function App() {
   return (
@@ -53,6 +54,8 @@ function App() {
               </GuestRoute>
             }
           />
+
+          <Route path="/assets/:id" element={<AssetPage />} />
         </Routes>
       </main>
     </div>
