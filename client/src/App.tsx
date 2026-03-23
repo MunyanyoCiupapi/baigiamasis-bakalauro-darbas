@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CreateAssetPage from './pages/CreateAssetPage';
 import AssetPage from './pages/AssetPage';
+import MyPurchasesPage from './pages/MyPurchasesPage';
 
 function App() {
   return (
@@ -56,6 +57,13 @@ function App() {
           />
 
           <Route path="/assets/:id" element={<AssetPage />} />
+
+          <Route path="/my-purchases" element={
+            <ProtectedRoute>
+              <MyPurchasesPage />
+            </ProtectedRoute>
+          }
+/>
         </Routes>
       </main>
     </div>

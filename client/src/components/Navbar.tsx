@@ -37,6 +37,13 @@ export default function Navbar() {
                   Įkelti kūrinį
                 </NavLink>
               )}
+
+              <NavLink
+                to="/my-purchases"
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              >
+                Mano pirkimai
+              </NavLink>
             </>
           )}
 

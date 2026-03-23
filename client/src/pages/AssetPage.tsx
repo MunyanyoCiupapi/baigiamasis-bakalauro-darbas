@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getAssetById } from '../api/assetsApi';
 import { getUser, isLoggedIn } from '../utils/auth';
+import { createPurchase } from '../api/purchasesApi';
 
 export default function AssetPage() {
   const { id } = useParams();
@@ -32,7 +33,7 @@ export default function AssetPage() {
     }
   }, [id]);
 
-  const handleBuy = async (licenseCode: string) => {
+  const handleBuy = async (licenseId: string) => {
     if (!loggedIn) {
       setError('Norėdami pirkti, turite prisijungti');
       return;
@@ -41,7 +42,13 @@ export default function AssetPage() {
     try {
       setError('');
       setMessage('');
-      setMessage(`Pirko ${licenseCode} licenciją`);
+
+      const result = await createPurchase({
+        assetId: asset.id,
+        licenseId,
+      });
+
+      setMessage(result.message || 'Pirkimas sėkmingas');
     } catch (err: any) {
       setError(err.message || 'Nepavyko pradėti pirkimo');
     }
@@ -142,16 +149,10 @@ export default function AssetPage() {
               {user?.id !== asset.artist.id && (
                 <button
                   className="buy-button"
-                  onClick={() => handleBuy(item.license.code)}
+                  onClick={() => handleBuy(item.license.id)}
                 >
                   Pirkti šią licenciją
                 </button>
-              )}
-
-              {user?.role === 'ARTIST' && user?.id !== asset.artist.id && (
-                <div className="asset-license-note">
-                  Atlikėjas gali peržiūrėti licencijas, bet pirkimas čia nerodomas.
-                </div>
               )}
             </div>
           ))}

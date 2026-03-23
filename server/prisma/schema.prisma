@@ -36,7 +36,8 @@ model User {
   displayName  String
   role         UserRole @default(USER)
 
-  assets Asset[]
+  assets    Asset[]
+  purchases Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,7 +60,8 @@ model Asset {
   artistId String
   artist   User   @relation(fields: [artistId], references: [id])
 
-  licenses AssetLicense[]
+  licenses  AssetLicense[]
+  purchases Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,7 +76,8 @@ model License {
   name        String
   description String?
 
-  assets AssetLicense[]
+  assets    AssetLicense[]
+  purchases Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,6 +93,24 @@ model AssetLicense {
   license License @relation(fields: [licenseId], references: [id])
 
   @@unique([assetId, licenseId])
+  @@index([assetId])
+  @@index([licenseId])
+}
+
+model Purchase {
+  id         String   @id @default(uuid())
+  buyerId    String
+  assetId    String
+  licenseId  String
+  priceCents Int
+
+  buyer   User    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  license License @relation(fields: [licenseId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([buyerId])
   @@index([assetId])
   @@index([licenseId])
 }
