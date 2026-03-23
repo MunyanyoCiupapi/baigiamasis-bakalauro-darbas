@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getAssetById } from '../api/assetsApi';
 import { getUser, isLoggedIn } from '../utils/auth';
 import { createPurchase } from '../api/purchasesApi';
+import PreviewPlayer from '../components/PreviewPlayer';
 
 export default function AssetPage() {
   const { id } = useParams();
@@ -108,13 +109,10 @@ export default function AssetPage() {
 
           <div className="asset-view-player-box">
             <h3>Preview</h3>
-            <audio
-              controls
-              className="asset-view-audio"
-              src={`http://localhost:3000${asset.fileUrl}`}
-            >
-              Jūsų naršyklė nepalaiko audio elemento.
-            </audio>
+            <PreviewPlayer
+            src={`http://localhost:3000${asset.previewUrl}`}
+            title={asset.title}
+          />
           </div>
         </div>
       </section>
@@ -145,7 +143,6 @@ export default function AssetPage() {
                 )}
               </div>
 
-              {/* Pirkimo mygtukas, kuris rodomas tik ne savo kūrinių atlikėjams ir vartotojams */}
               {user?.id !== asset.artist.id && (
                 <button
                   className="buy-button"

@@ -44,3 +44,29 @@ export async function getMyPurchases() {
 
   return result;
 }
+
+export async function downloadPurchaseFile(purchaseId: string) {
+  const token = getToken();
+
+  const response = await fetch(`${API_URL}/purchases/${purchaseId}/download`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    let message = 'Nepavyko atsisiųsti failo';
+
+    try {
+      const result = await response.json();
+      message = result.message || message;
+    } catch {
+      
+    }
+
+    throw new Error(message);
+  }
+
+  return response.blob();
+}

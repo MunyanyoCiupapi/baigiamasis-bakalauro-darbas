@@ -1,6 +1,16 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PurchasesService } from './purchases.service';
+import type { Response } from 'express';
 
 @Controller('purchases')
 export class PurchasesController {
@@ -16,5 +26,15 @@ export class PurchasesController {
   @Get('me')
   findMyPurchases(@Req() req: any) {
     return this.purchasesService.findMyPurchases(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/download')
+  download(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    return this.purchasesService.download(id, req.user, res);
   }
 }

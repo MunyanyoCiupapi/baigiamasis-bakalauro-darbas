@@ -4,6 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Response } from 'express';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class AssetsService {
@@ -26,10 +29,15 @@ export class AssetsService {
     }
 
     const audioFile = files?.audio?.[0];
+    const previewFile = files?.preview?.[0];
     const coverFile = files?.cover?.[0];
 
     if (!audioFile) {
       throw new BadRequestException('Audio failas yra privalomas');
+    }
+
+    if (!previewFile) {
+      throw new BadRequestException('Preview failas yra privalomas');
     }
 
     if (!prices) {
@@ -55,6 +63,7 @@ export class AssetsService {
     }
 
     const fileUrl = `/uploads/audio/${audioFile.filename}`;
+    const previewUrl = `/uploads/previews/${previewFile.filename}`;
     const coverUrl = coverFile ? `/uploads/covers/${coverFile.filename}` : null;
 
     const asset = await this.prisma.asset.create({
@@ -67,6 +76,7 @@ export class AssetsService {
         musicalKey,
         durationSec: durationSec ? Number(durationSec) : null,
         fileUrl,
+        previewUrl,
         coverUrl,
         artistId: currentUser.userId,
       },
@@ -133,13 +143,38 @@ export class AssetsService {
         },
       },
     });
-    
 
     if (!asset) {
       throw new NotFoundException('Asset nerastas');
     }
 
     return asset;
+  }
+
+  async preview(id: string, res: Response) {
+    const asset = await this.prisma.asset.findUnique({
+      where: { id },
+    });
+
+    if (!asset) {
+      throw new NotFoundException('Asset nerastas');
+    }
+
+    if (!asset.previewUrl) {
+      throw new NotFoundException('Preview failas nerastas');
+    }
+
+    const relativeFilePath = asset.previewUrl.startsWith('/')
+      ? asset.previewUrl.slice(1)
+      : asset.previewUrl;
+
+    const absoluteFilePath = path.join(process.cwd(), relativeFilePath);
+
+    if (!fs.existsSync(absoluteFilePath)) {
+      throw new NotFoundException('Preview failas nerastas serveryje');
+    }
+
+    return res.sendFile(absoluteFilePath);
   }
 
   async remove(id: string, currentUser: any) {
@@ -163,7 +198,4 @@ export class AssetsService {
       message: 'Kūrinys sėkmingai ištrintas',
     };
   }
-
-
-
 }

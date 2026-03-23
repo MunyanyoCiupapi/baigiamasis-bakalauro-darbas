@@ -2,6 +2,27 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createAsset } from '../api/assetsApi';
 
+function getAudioDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const audio = document.createElement('audio');
+    const objectUrl = URL.createObjectURL(file);
+
+    audio.preload = 'metadata';
+    audio.src = objectUrl;
+
+    audio.onloadedmetadata = () => {
+      const duration = audio.duration;
+      URL.revokeObjectURL(objectUrl);
+      resolve(duration);
+    };
+
+    audio.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Nepavyko nuskaityti audio failo trukmės'));
+    };
+  });
+}
+
 export default function CreateAssetPage() {
   const navigate = useNavigate();
 
@@ -18,11 +39,41 @@ export default function CreateAssetPage() {
   const [unlimitedPrice, setUnlimitedPrice] = useState('');
 
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handlePreviewChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0] || null;
+
+    if (!file) {
+      setPreviewFile(null);
+      return;
+    }
+
+    try {
+      setError('');
+      const duration = await getAudioDuration(file);
+
+      if (duration > 30) {
+        setPreviewFile(null);
+        e.target.value = '';
+        setError('Preview failas negali būti ilgesnis nei 30 sekundžių');
+        return;
+      }
+
+      setPreviewFile(file);
+    } catch (err: any) {
+      setPreviewFile(null);
+      e.target.value = '';
+      setError(err.message || 'Nepavyko patikrinti preview failo');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +82,11 @@ export default function CreateAssetPage() {
 
     if (!audioFile) {
       setError('Pasirink audio failą');
+      return;
+    }
+
+    if (!previewFile) {
+      setError('Pasirink preview failą iki 30 sekundžių');
       return;
     }
 
@@ -48,6 +104,7 @@ export default function CreateAssetPage() {
       formData.append('durationSec', durationSec);
 
       formData.append('audio', audioFile);
+      formData.append('preview', previewFile);
 
       if (coverFile) {
         formData.append('cover', coverFile);
@@ -85,6 +142,7 @@ export default function CreateAssetPage() {
       setCommercialPrice('');
       setUnlimitedPrice('');
       setAudioFile(null);
+      setPreviewFile(null);
       setCoverFile(null);
 
       setTimeout(() => {
@@ -103,7 +161,7 @@ export default function CreateAssetPage() {
         <p className="auth-kicker">Atlikėjo zona</p>
         <h2>Įkelti kūrinį</h2>
         <p className="auth-text">
-          Užpildyk informaciją apie kūrinį ir pridėk audio failą bei viršelį.
+          Įkelk pilną failą, trumpą preview iki 30 sekundžių ir viršelį.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -202,11 +260,18 @@ export default function CreateAssetPage() {
             />
           </div>
 
-          <label>Audio failas</label>
+          <label>Pilnas audio failas</label>
           <input
             type="file"
             accept=".mp3,.wav,.mpeg,audio/*"
             onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+          />
+
+          <label>Preview failas (iki 30 s)</label>
+          <input
+            type="file"
+            accept=".mp3,.wav,.mpeg,audio/*"
+            onChange={handlePreviewChange}
           />
 
           <label>Cover nuotrauka</label>

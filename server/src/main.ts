@@ -12,8 +12,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
+  app.useStaticAssets(join(process.cwd(), 'uploads', 'covers'), {
+    prefix: '/uploads/covers/',
+  });
+
+  app.useStaticAssets(join(process.cwd(), 'uploads', 'previews'), {
+    prefix: '/uploads/previews/',
   });
 
   await app.listen(process.env.PORT ?? 3000);

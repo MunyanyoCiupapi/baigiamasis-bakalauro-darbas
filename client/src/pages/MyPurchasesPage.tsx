@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMyPurchases } from '../api/purchasesApi';
+import { downloadPurchaseFile, getMyPurchases } from '../api/purchasesApi';
 
 export default function MyPurchasesPage() {
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -22,6 +22,33 @@ export default function MyPurchasesPage() {
 
     loadPurchases();
   }, []);
+
+  const handleDownload = async (
+  purchaseId: string,
+  fileUrl: string,
+  title: string,
+  ) => {
+    try {
+      setError('');
+
+      const blob = await downloadPurchaseFile(purchaseId);
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+
+      const extension = fileUrl.split('.').pop() || 'mp3';
+      a.download = `${title}.${extension}`;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      setError(err.message || 'Nepavyko atsisiųsti failo');
+    }
+  };
 
   if (loading) {
     return <p className="info-text">Kraunami pirkimai...</p>;
@@ -69,9 +96,14 @@ export default function MyPurchasesPage() {
                 </p>
 
                 <a
-                  href={`http://localhost:3000${purchase.asset.fileUrl}`}
-                  target="_blank"
-                  rel="noreferrer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDownload(
+                      purchase.id,
+                      purchase.asset.fileUrl,
+                      purchase.asset.title
+                    );
+                  }}
                   className="primary-link-button"
                 >
                   Atsisiųsti failą

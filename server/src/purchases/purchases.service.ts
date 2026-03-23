@@ -4,6 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Response } from 'express';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class PurchasesService {
@@ -118,5 +121,34 @@ export class PurchasesService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async download(id: string, currentUser: any, res: Response) {
+    const purchase = await this.prisma.purchase.findUnique({
+      where: { id },
+      include: {
+        asset: true,
+      },
+    });
+
+    if (!purchase) {
+      throw new NotFoundException('Pirkimas nerastas');
+    }
+
+    if (purchase.buyerId !== currentUser.userId) {
+      throw new BadRequestException('Neturite prieigos prie šio failo');
+    }
+
+    const relativeFilePath = purchase.asset.fileUrl.startsWith('/')
+      ? purchase.asset.fileUrl.slice(1)
+      : purchase.asset.fileUrl;
+
+    const absoluteFilePath = path.join(process.cwd(), relativeFilePath);
+
+    if (!fs.existsSync(absoluteFilePath)) {
+      throw new NotFoundException('Failas nerastas serveryje');
+    }
+
+    return res.download(absoluteFilePath);
   }
 }
