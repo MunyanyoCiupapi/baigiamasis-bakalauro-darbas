@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom'; // PRIDĖTA
 import { downloadPurchaseFile, getMyPurchases } from '../api/purchasesApi';
 
 export default function MyPurchasesPage() {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  const [searchParams] = useSearchParams();
+  const isSuccess = searchParams.get('success') === 'true';
 
   useEffect(() => {
     async function loadPurchases() {
@@ -24,9 +28,9 @@ export default function MyPurchasesPage() {
   }, []);
 
   const handleDownload = async (
-  purchaseId: string,
-  fileUrl: string,
-  title: string,
+    purchaseId: string,
+    fileUrl: string,
+    title: string,
   ) => {
     try {
       setError('');
@@ -60,6 +64,12 @@ export default function MyPurchasesPage() {
         <h2>Mano pirkimai</h2>
       </div>
 
+      {isSuccess && (
+        <p className="success" style={{ marginBottom: '20px' }}>
+          Apmokėjimas sėkmingas! Kūrinys pridėtas prie jūsų kolekcijos.
+        </p>
+      )}
+
       {error && <p className="error">{error}</p>}
 
       {purchases.length === 0 ? (
@@ -84,7 +94,7 @@ export default function MyPurchasesPage() {
                 <h3>{purchase.asset.title}</h3>
 
                 <p className="asset-meta">
-                  Autorius: {purchase.asset.artist.displayName}
+                  Autorius: {purchase.asset.artist?.displayName || 'Nežinomas'}
                 </p>
 
                 <p className="asset-meta">
@@ -105,6 +115,7 @@ export default function MyPurchasesPage() {
                     );
                   }}
                   className="primary-link-button"
+                  style={{ cursor: 'pointer' }}
                 >
                   Atsisiųsti failą
                 </a>

@@ -2,9 +2,22 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
+
+  app.use(
+    express.json({
+      verify: (req: any, res, buf) => {
+        if (req.originalUrl.startsWith('/purchases/webhook')) {
+          req.rawBody = buf;
+        }
+      },
+    }),
+  );
 
   app.enableCors({
     origin: 'http://localhost:5173',

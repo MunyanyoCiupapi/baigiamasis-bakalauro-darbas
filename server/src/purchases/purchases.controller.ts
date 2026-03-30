@@ -7,10 +7,13 @@ import {
   Req,
   Res,
   UseGuards,
+  Headers,
+  BadRequestException,
 } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PurchasesService } from './purchases.service';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
 @Controller('purchases')
 export class PurchasesController {
@@ -20,6 +23,15 @@ export class PurchasesController {
   @Post()
   create(@Body() body: any, @Req() req: any) {
     return this.purchasesService.create(body, req.user);
+  }
+
+  @Post('webhook')
+  @Post('webhook')
+  async handleWebhook(
+    @Headers('stripe-signature') signature: string,
+    @Req() req: any,
+  ) {
+    return this.purchasesService.handleStripeWebhook(signature, req.rawBody);
   }
 
   @UseGuards(JwtAuthGuard)

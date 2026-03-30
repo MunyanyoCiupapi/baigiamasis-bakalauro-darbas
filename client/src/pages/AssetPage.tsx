@@ -42,16 +42,21 @@ export default function AssetPage() {
 
     try {
       setError('');
-      setMessage('');
+      setMessage('Nukreipiama į saugų apmokėjimo langą...');
 
       const result = await createPurchase({
         assetId: asset.id,
         licenseId,
       });
 
-      setMessage(result.message || 'Pirkimas sėkmingas');
+      if (result.checkoutUrl) {
+        window.location.href = result.checkoutUrl;
+      } else {
+        setMessage(result.message || 'Pirkimas sėkmingas');
+      }
     } catch (err: any) {
       setError(err.message || 'Nepavyko pradėti pirkimo');
+      setMessage('');
     }
   };
 
