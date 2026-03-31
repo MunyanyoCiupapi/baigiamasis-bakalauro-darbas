@@ -49,4 +49,10 @@ export class PurchasesController {
   ) {
     return this.purchasesService.download(id, req.user, res);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('sales')
+  findMySales(@Req() req: any) {
+    return this.purchasesService.findMySales(req.user);
+  }
 }

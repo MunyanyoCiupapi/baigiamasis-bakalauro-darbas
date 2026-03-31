@@ -30,12 +30,20 @@ export default function Navbar() {
               </NavLink>
 
               {user?.role === 'ARTIST' && (
-                <NavLink
-                  to="/upload"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                >
-                  Įkelti kūrinį
-                </NavLink>
+                <>
+                  <NavLink
+                    to="/my-uploads"
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    Mano kūriniai
+                  </NavLink>
+                  <NavLink
+                    to="/my-sales"
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    Mano pardavimai
+                  </NavLink>
+                </>
               )}
 
               <NavLink
@@ -55,7 +63,6 @@ export default function Navbar() {
               >
                 Prisijungti
               </NavLink>
-
               <NavLink
                 to="/register"
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}

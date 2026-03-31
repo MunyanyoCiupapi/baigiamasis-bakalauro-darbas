@@ -124,6 +124,24 @@ export class AssetsService {
     });
   }
 
+  async findMyUploads(currentUser: any) {
+    return this.prisma.asset.findMany({
+      where: {
+        artistId: currentUser.userId,
+      },
+      include: {
+        licenses: {
+          include: {
+            license: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async findOne(id: string) {
     const asset = await this.prisma.asset.findUnique({
       where: { id },

@@ -68,6 +68,8 @@ export default function AssetPage() {
     return <p className="error">Šis kūrinys nebuvo rastas.</p>;
   }
 
+  const isOwner = user?.id === asset.artist.id;
+
   return (
     <div className="asset-view-page">
       <div className="asset-view-topbar">
@@ -79,11 +81,15 @@ export default function AssetPage() {
       <section className="asset-view-hero">
         <div className="asset-view-cover-wrap">
           {asset.coverUrl ? (
-            <img
-              src={`http://localhost:3000${asset.coverUrl}`}
-              alt={asset.title}
-              className="asset-view-cover"
-            />
+            <div 
+              className="asset-view-cover" 
+              style={{
+                backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: '#1e293b' 
+              }}
+            ></div>
           ) : (
             <div className="asset-view-cover asset-cover-placeholder">
               Be cover
@@ -93,7 +99,7 @@ export default function AssetPage() {
 
         <div className="asset-view-main">
           <div className="asset-view-header">
-            <p className="asset-view-kicker">{asset.type}</p>
+            <p className="asset-view-kicker">{asset.type || 'TRACK'}</p>
             <h1 className="asset-view-title">{asset.title}</h1>
             <p className="asset-view-artist">Autorius: {asset.artist.displayName}</p>
           </div>
@@ -115,9 +121,9 @@ export default function AssetPage() {
           <div className="asset-view-player-box">
             <h3>Preview</h3>
             <PreviewPlayer
-            src={`http://localhost:3000${asset.previewUrl}`}
-            title={asset.title}
-          />
+              src={`http://localhost:3000${asset.previewUrl}`}
+              title={asset.title}
+            />
           </div>
         </div>
       </section>
@@ -148,7 +154,20 @@ export default function AssetPage() {
                 )}
               </div>
 
-              {user?.id !== asset.artist.id && (
+              {isOwner ? (
+                <button
+                  className="buy-button"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#94a3b8',
+                    cursor: 'not-allowed',
+                    boxShadow: 'none'
+                  }}
+                  disabled
+                >
+                  Tai jūsų kūrinys
+                </button>
+              ) : (
                 <button
                   className="buy-button"
                   onClick={() => handleBuy(item.license.id)}

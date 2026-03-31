@@ -75,6 +75,12 @@ export class AssetsController {
     return this.assetsService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('my-uploads')
+  findMyUploads(@Req() req: any) {
+    return this.assetsService.findMyUploads(req.user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.assetsService.findOne(id);

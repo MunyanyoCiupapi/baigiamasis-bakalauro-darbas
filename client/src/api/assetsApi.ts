@@ -71,3 +71,19 @@ export async function getAssetById(id: string) {
 
   return result;
 }
+
+export async function getMyUploads() {
+  const token = getToken();
+  const response = await fetch(`http://localhost:3000/assets/my-uploads`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Nepavyko gauti jūsų kūrinių');
+  }
+
+  return response.json();
+}

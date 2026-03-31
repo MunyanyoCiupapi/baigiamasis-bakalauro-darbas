@@ -70,3 +70,22 @@ export async function downloadPurchaseFile(purchaseId: string) {
 
   return response.blob();
 }
+
+export async function getMySales() {
+  const token = getToken();
+  
+  const response = await fetch(`${API_URL}/purchases/sales`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Nepavyko užkrauti pardavimų');
+  }
+
+  return result;
+}

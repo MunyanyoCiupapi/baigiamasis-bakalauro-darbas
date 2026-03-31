@@ -1,221 +1,222 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { deleteAsset, getAssets } from '../api/assetsApi';
-import { getUser, isLoggedIn } from '../utils/auth';
-import PreviewPlayer from '../components/PreviewPlayer';
-type Asset = {
-  id: string;
-  title: string;
-  description?: string;
-  type: 'TRACK' | 'LOOP' | 'SAMPLE';
-  genre?: string;
-  bpm?: number;
-  musicalKey?: string;
-  durationSec?: number;
-  fileUrl: string;
-  previewUrl?: string | null;
-  coverUrl?: string | null;
-  artist: {
-    id: string;
-    email: string;
-    displayName: string;
-    role: string;
-  };
-  licenses: Array<{
-    id: string;
-    priceCents: number;
-    license: {
-      id: string;
-      code: string;
-      name: string;
-      description?: string | null;
-    };
-  }>;
-};
+import { getAssets } from '../api/assetsApi';
+import { isLoggedIn } from '../utils/auth';
+
 export default function HomePage() {
-  const loggedIn = isLoggedIn();
-  const user = getUser();
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const userIsLoggedIn = isLoggedIn(); 
+
   useEffect(() => {
+    if (!userIsLoggedIn) return;
+
     async function loadAssets() {
       try {
         setLoading(true);
-        setError('');
-        const result = await getAssets();
-        setAssets(result);
+        const data = await getAssets();
+        setAssets(data);
       } catch (err: any) {
         setError(err.message || 'Nepavyko užkrauti kūrinių');
       } finally {
         setLoading(false);
       }
     }
-    if (loggedIn) {
-      loadAssets();
-    }
-  }, [loggedIn]);
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm('Ar tikrai norite ištrinti šį kūrinį?');
-    if (!confirmed) return;
-    try {
-      setError('');
-      setMessage('');
-      const result = await deleteAsset(id);
-      setAssets((prev) => prev.filter((asset) => asset.id !== id));
-      setMessage(result.message || 'Kūrinys ištrintas');
-    } catch (err: any) {
-      setError(err.message || 'Nepavyko ištrinti kūrinio');
-    }
-  };
-  return (
-    <div className="home-page">
-      <section className="hero-section">
-        <div className="hero-content">
-          <span className="hero-badge">Muzikos prekybos platforma</span>
-          <h1 className="hero-title">
-            Įkelk, parduok ir atrask{' '}
-            <span className="gradient-text">beat’us, loop’us ir sample’us</span>
-          </h1>
-          <p className="hero-description">
-            Platforma skirta atlikėjams ir pirkėjams. Čia gali naršyti visų autorių
-            kūrinius, klausyti preview ir valdyti savo turinį.
-          </p>
-          {loggedIn && user ? (
-            <div className="welcome-box">
-              <h3>Sveikas sugrįžęs, {user.displayName}!</h3>
-              <p>Prisijungta kaip: {user.role}</p>
-            </div>
-          ) : (
-            <div className="hero-actions">
-              <Link to="/register" className="primary-link-button">
-                Pradėti dabar
-              </Link>
-              <Link to="/login" className="secondary-link-button">
-                Prisijungti
-              </Link>
-            </div>
-          )}
-        </div>
-        <div className="hero-card">
-          <div className="mock-player">
-            <div className="mock-top">
-              <span className="dot"></span>
-              <span className="dot"></span>
-              <span className="dot"></span>
-            </div>
-            <div className="mock-body">
-              <p className="mock-label">Pavyzdinis kūrinys</p>
-              <h3>Dark Trap Beat</h3>
-              <p className="mock-meta">TRACK · 140 BPM · C#m</p>
-              <div className="wave-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div className="license-preview">
-                <div className="license-row">
-                  <span>Personal</span>
-                  <strong>29 €</strong>
-                </div>
-                <div className="license-row">
-                  <span>Commercial</span>
-                  <strong>79 €</strong>
-                </div>
-                <div className="license-row">
-                  <span>Unlimited</span>
-                  <strong>199 €</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      {loggedIn && (
-        <section className="my-assets-section">
-          <div className="section-header">
-            <h2>Visi kūriniai</h2>
-            {user?.role === 'ARTIST' && (
-              <Link to="/upload" className="primary-link-button">
-                Įkelti naują
-              </Link>
-            )}
-          </div>
-          {message && <p className="success">{message}</p>}
-          {error && <p className="error">{error}</p>}
-          {loading ? (
-            <p className="info-text">Kraunami kūriniai...</p>
-          ) : assets.length === 0 ? (
-            <p className="info-text">Dar nėra įkeltų kūrinių.</p>
-          ) : (
-            <div className="asset-grid">
-              {assets.map((asset) => {
-                const isOwner = user?.id === asset.artist.id;
-                const canDelete = isOwner && user?.role === 'ARTIST';
-                return (
-                  <div className="asset-card" key={asset.id}>
-                    <Link to={`/assets/${asset.id}`}>
-                      {asset.coverUrl ? (
-                        <img
-                          src={`http://localhost:3000${asset.coverUrl}`}
-                          alt={asset.title}
-                          className="asset-cover"
-                        />
-                      ) : (
-                        <div className="asset-cover asset-cover-placeholder">
-                          Be cover
-                        </div>
-                      )}
-                      <div className="asset-card-body">
-                        <h3>{asset.title}</h3>
-                        <p className="asset-meta">
-                          {asset.type}
-                          {asset.genre ? ` · ${asset.genre}` : ''}
-                          {asset.bpm ? ` · ${asset.bpm} BPM` : ''}
-                          {asset.musicalKey ? ` · ${asset.musicalKey}` : ''}
-                        </p>
-                        <p className="asset-meta">
-                          Autorius: {asset.artist.displayName}
-                        </p>
-                        {asset.description && (
-                          <p className="asset-description">{asset.description}</p>
-                        )}
-                        <PreviewPlayer
-                          src={`http://localhost:3000${asset.previewUrl}`}
-                          title={asset.title}
-                        />
+    loadAssets();
+  }, [userIsLoggedIn]);
 
-                        <div className="asset-prices">
-                          {asset.licenses.map((item) => (
-                            <div key={item.id} className="license-row">
-                              <span>{item.license.name}</span>
-                              <strong>{(item.priceCents / 100).toFixed(2)} €</strong>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </Link>
-                    {canDelete && (
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDelete(asset.id)}
-                      >
-                        Ištrinti
-                      </button>
+  if (!userIsLoggedIn) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '75vh',
+        textAlign: 'center',
+        padding: '20px'
+      }}>
+        <span style={{
+          display: 'inline-block',
+          padding: '8px 16px',
+          borderRadius: '999px',
+          backgroundColor: 'rgba(56, 189, 248, 0.1)',
+          color: '#38bdf8',
+          fontWeight: '600',
+          fontSize: '0.9rem',
+          marginBottom: '24px',
+          border: '1px solid rgba(56, 189, 248, 0.2)'
+        }}>
+          🎵 BakisMusic Platforma
+        </span>
+
+        {/* Pagrindinė antraštė */}
+        <h1 style={{
+          fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+          fontWeight: '800',
+          margin: '0 0 24px 0',
+          lineHeight: '1.1',
+          letterSpacing: '-0.03em',
+          color: '#fff'
+        }}>
+          Tavo muzika.<br />
+          <span style={{ background: 'linear-gradient(135deg, #818cf8, #38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Tavo taisyklės.
+          </span>
+        </h1>
+
+        <p style={{
+          fontSize: '1.25rem',
+          color: '#94a3b8',
+          maxWidth: '600px',
+          margin: '0 0 40px 0',
+          lineHeight: '1.6'
+        }}>
+          Atrask ir pirk išskirtinius kūrinius savo naujam projektui arba parduok savo kūrybą tiesiogiai. Jokių tarpininkų, tik grynas talentas.
+        </p>
+
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link to="/register" className="primary-link-button" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>
+            Pradėti dabar
+          </Link>
+          <Link to="/login" className="secondary-link-button" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>
+            Prisijungti
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredAssets = assets.filter(asset => 
+    asset.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div style={{ paddingBottom: '40px' }}>
+      <div style={{
+        textAlign: 'center',
+        padding: '60px 20px',
+        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        borderRadius: '24px',
+        marginBottom: '40px',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
+      }}>
+        <h1 style={{ fontSize: '3rem', margin: '0 0 16px 0', color: '#fff', fontWeight: '800', letterSpacing: '-0.02em' }}>
+          Atrask ir pirk geriausius <span style={{ color: '#38bdf8' }}>muzikos</span> kūrinius
+        </h1>
+        <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: '600px', margin: '0 auto 30px auto' }}>
+          Aukščiausios kokybės instrumentuotės ir dainos tavo projektams. Palaikyk nepriklausomus atlikėjus.
+        </p>
+        
+        <input 
+          type="text" 
+          placeholder="Ieškoti kūrinio pagal pavadinimą..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '16px 24px',
+            width: '100%',
+            maxWidth: '500px',
+            borderRadius: '50px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            color: '#fff',
+            fontSize: '1rem',
+            outline: 'none',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        />
+      </div>
+
+      {/* KŪRINIŲ TINKLELIS */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Naujausi įkėlimai</h2>
+        <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Rasta: {filteredAssets.length}</span>
+      </div>
+
+      {loading && <p className="info-text">Kraunami kūriniai...</p>}
+      {error && <p className="error">{error}</p>}
+
+      {!loading && !error && filteredAssets.length === 0 ? (
+        <p className="info-text" style={{ textAlign: 'center', marginTop: '40px' }}>
+          Kūrinių nerasta. Pabandykite kitą paieškos žodį.
+        </p>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+          gap: '24px'
+        }}>
+          {filteredAssets.map((asset) => (
+            <Link key={asset.id} to={`/assets/${asset.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.3)';
+                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              }}
+              >
+                <div style={{
+                  height: '180px',
+                  backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                }}></div>
+                
+                <div style={{ padding: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <h3 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#fff', fontWeight: 'bold' }}>
+                      {asset.title}
+                    </h3>
+                    <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: '#94a3b8' }}>
+                      Autorius: <span style={{ color: '#cbd5e1' }}>{asset.artist?.displayName || 'Nežinomas'}</span>
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                    <span style={{ 
+                      backgroundColor: 'rgba(255,255,255,0.05)', 
+                      padding: '4px 10px', 
+                      borderRadius: '8px', 
+                      fontSize: '0.8rem', 
+                      color: '#94a3b8',
+                      fontWeight: '500'
+                    }}>
+                      {asset.bpm} BPM
+                    </span>
+                    
+                    {asset.licenses && asset.licenses.length > 0 && (
+                      <span style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        Nuo {(Math.min(...asset.licenses.map((l: any) => l.priceCents)) / 100).toFixed(2)} €
+                      </span>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );
-} 
+}

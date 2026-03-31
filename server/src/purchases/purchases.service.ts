@@ -191,4 +191,28 @@ export class PurchasesService {
 
     return res.download(absoluteFilePath);
   }
+
+  async findMySales(currentUser: any) {
+    return this.prisma.purchase.findMany({
+      where: {
+        asset: {
+          artistId: currentUser.userId,
+        },
+      },
+      include: {
+        asset: true,
+        license: true,
+        buyer: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc', 
+      },
+    });
+  }
 }
