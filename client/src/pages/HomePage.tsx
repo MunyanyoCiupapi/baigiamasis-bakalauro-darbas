@@ -2,25 +2,26 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAssets } from '../api/assetsApi';
 import { isLoggedIn } from '../utils/auth';
+import PreviewPlayer from '../components/PreviewPlayer';
 
 export default function HomePage() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('Visi');
 
-  const userIsLoggedIn = isLoggedIn(); 
+  const categories = ['Visi', 'Track', 'Loop', 'Sample'];
+  const userIsLoggedIn = isLoggedIn();
 
   useEffect(() => {
     if (!userIsLoggedIn) return;
-
     async function loadAssets() {
       try {
         setLoading(true);
         const data = await getAssets();
         setAssets(data);
-      } catch (err: any) {
-        setError(err.message || 'Nepavyko užkrauti kūrinių');
+      } catch (err) {
+        console.error("Klaida kraunant kūrinius:", err);
       } finally {
         setLoading(false);
       }
@@ -30,193 +31,160 @@ export default function HomePage() {
 
   if (!userIsLoggedIn) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '75vh',
-        textAlign: 'center',
-        padding: '20px'
-      }}>
-        <span style={{
-          display: 'inline-block',
-          padding: '8px 16px',
-          borderRadius: '999px',
-          backgroundColor: 'rgba(56, 189, 248, 0.1)',
-          color: '#38bdf8',
-          fontWeight: '600',
-          fontSize: '0.9rem',
-          marginBottom: '24px',
-          border: '1px solid rgba(56, 189, 248, 0.2)'
-        }}>
-          🎵 BakisMusic Platforma
-        </span>
-
-        {/* Pagrindinė antraštė */}
-        <h1 style={{
-          fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
-          fontWeight: '800',
-          margin: '0 0 24px 0',
-          lineHeight: '1.1',
-          letterSpacing: '-0.03em',
-          color: '#fff'
-        }}>
-          Tavo muzika.<br />
-          <span style={{ background: 'linear-gradient(135deg, #818cf8, #38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Tavo taisyklės.
-          </span>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '70vh', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '4rem', fontWeight: '900', margin: '0 0 10px 0', letterSpacing: '-0.04em' }}>
+          Bakis<span className="logo-accent">Music</span>
         </h1>
-
-        <p style={{
-          fontSize: '1.25rem',
-          color: '#94a3b8',
-          maxWidth: '600px',
-          margin: '0 0 40px 0',
-          lineHeight: '1.6'
-        }}>
-          Atrask ir pirk išskirtinius kūrinius savo naujam projektui arba parduok savo kūrybą tiesiogiai. Jokių tarpininkų, tik grynas talentas.
+        <p style={{ color: '#94a3b8', fontSize: '1.2rem', marginBottom: '30px' }}>
+          Tiesioginis palaikymas nepriklausomiems atlikėjams.
         </p>
-
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link to="/register" className="primary-link-button" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>
-            Pradėti dabar
-          </Link>
-          <Link to="/login" className="secondary-link-button" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>
-            Prisijungti
-          </Link>
-        </div>
+        <Link to="/login" className="primary-link-button" style={{ width: 'auto', padding: '14px 40px', borderRadius: '50px' }}>
+          Prisijungti
+        </Link>
       </div>
     );
   }
 
-  const filteredAssets = assets.filter(asset => 
-    asset.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAssets = assets.filter(asset => {
+    const matchesSearch = asset.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const assetType = asset.type ? asset.type.toLowerCase() : 'track';
+    const matchesTab = activeTab === 'Visi' || assetType === activeTab.toLowerCase();
+    return matchesSearch && matchesTab;
+  });
 
   return (
-    <div style={{ paddingBottom: '40px' }}>
-      <div style={{
-        textAlign: 'center',
-        padding: '60px 20px',
-        backgroundColor: 'rgba(255, 255, 255, 0.02)',
-        borderRadius: '24px',
-        marginBottom: '40px',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
-      }}>
-        <h1 style={{ fontSize: '3rem', margin: '0 0 16px 0', color: '#fff', fontWeight: '800', letterSpacing: '-0.02em' }}>
-          Atrask ir pirk geriausius <span style={{ color: '#38bdf8' }}>muzikos</span> kūrinius
+    <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%', paddingBottom: '80px' }}>
+      
+      <div style={{ textAlign: 'center', margin: '40px 0 50px 0' }}>
+        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: '800', color: '#fff', margin: '0 0 16px 0', letterSpacing: '-0.03em' }}>
+          Atrask naują <span className="gradient-text">skambesį.</span>
         </h1>
-        <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: '600px', margin: '0 auto 30px auto' }}>
-          Aukščiausios kokybės instrumentuotės ir dainos tavo projektams. Palaikyk nepriklausomus atlikėjus.
+        <p style={{ color: '#cbd5e1', fontSize: '1.15rem', maxWidth: '600px', margin: '0 auto', lineHeight: '1.5' }}>
+          Tiesioginis palaikymas atlikėjams. Kokybiški instrumentai, loop'ai ir sample'ai tavo produkcijai.
         </p>
-        
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', alignItems: 'center', marginBottom: '50px' }}>
         <input 
           type="text" 
-          placeholder="Ieškoti kūrinio pagal pavadinimą..." 
+          placeholder="Ieškoti..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
-            padding: '16px 24px',
-            width: '100%',
-            maxWidth: '500px',
-            borderRadius: '50px',
-            border: '1px solid rgba(255,255,255,0.1)',
-            backgroundColor: 'rgba(0,0,0,0.2)',
-            color: '#fff',
-            fontSize: '1rem',
-            outline: 'none',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            padding: '12px 20px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.1)',
+            backgroundColor: 'rgba(0,0,0,0.2)', color: '#fff', outline: 'none', width: '260px', fontSize: '0.95rem', margin: 0
           }}
         />
+
+        {categories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveTab(cat)}
+            style={{
+              width: 'auto', flex: '0 0 auto',
+              background: activeTab === cat ? 'linear-gradient(135deg, #6366f1, #3b82f6)' : 'rgba(255,255,255,0.05)', 
+              border: activeTab === cat ? 'none' : '1px solid rgba(255,255,255,0.1)', 
+              boxShadow: activeTab === cat ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none',
+              cursor: 'pointer', fontSize: '0.95rem', fontWeight: '600', color: '#fff',
+              padding: '12px 24px', borderRadius: '999px', transition: 'all 0.2s ease', margin: 0
+            }}
+          >
+            {cat === 'Visi' ? 'Visi tipai' : cat + 's'}
+          </button>
+        ))}
+
+        {(searchTerm || activeTab !== 'Visi') && (
+          <button 
+            onClick={() => {setSearchTerm(''); setActiveTab('Visi');}}
+            style={{ 
+              width: 'auto', flex: '0 0 auto', color: '#fca5a5', background: 'rgba(239, 68, 68, 0.1)', 
+              border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer', fontWeight: '600', 
+              fontSize: '0.9rem', padding: '12px 20px', borderRadius: '999px', boxShadow: 'none', margin: 0 
+            }}
+          >
+            Išvalyti
+          </button>
+        )}
       </div>
 
-      {/* KŪRINIŲ TINKLELIS */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Naujausi įkėlimai</h2>
-        <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Rasta: {filteredAssets.length}</span>
-      </div>
-
-      {loading && <p className="info-text">Kraunami kūriniai...</p>}
-      {error && <p className="error">{error}</p>}
-
-      {!loading && !error && filteredAssets.length === 0 ? (
-        <p className="info-text" style={{ textAlign: 'center', marginTop: '40px' }}>
-          Kūrinių nerasta. Pabandykite kitą paieškos žodį.
-        </p>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          gap: '24px'
-        }}>
-          {filteredAssets.map((asset) => (
-            <Link key={asset.id} to={`/assets/${asset.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+      <main>
+        {loading ? (
+          <p style={{ textAlign: 'center', color: '#94a3b8' }}>Kraunama...</p>
+        ) : filteredAssets.length > 0 ? (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+            gap: '30px' 
+          }}>
+            {filteredAssets.map(asset => (
+              <div key={asset.id} style={{
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                borderRadius: '24px',
+                border: '1px solid rgba(255,255,255,0.08)',
                 overflow: 'hidden',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                height: '100%',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                height: '100%',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.3)';
+                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,0.4)';
                 e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-              }}
-              >
-                <div style={{
-                  height: '180px',
-                  backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-                }}></div>
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              }}>
                 
-                <div style={{ padding: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div>
-                    <h3 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#fff', fontWeight: 'bold' }}>
-                      {asset.title}
-                    </h3>
-                    <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: '#94a3b8' }}>
-                      Autorius: <span style={{ color: '#cbd5e1' }}>{asset.artist?.displayName || 'Nežinomas'}</span>
-                    </p>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                    <span style={{ 
-                      backgroundColor: 'rgba(255,255,255,0.05)', 
-                      padding: '4px 10px', 
-                      borderRadius: '8px', 
-                      fontSize: '0.8rem', 
-                      color: '#94a3b8',
-                      fontWeight: '500'
-                    }}>
-                      {asset.bpm} BPM
-                    </span>
-                    
-                    {asset.licenses && asset.licenses.length > 0 && (
-                      <span style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                        Nuo {(Math.min(...asset.licenses.map((l: any) => l.priceCents)) / 100).toFixed(2)} €
+                <Link to={`/assets/${asset.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <div style={{
+                    width: '100%', aspectRatio: '1/1',
+                    backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                    backgroundColor: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.05)'
+                  }} />
+                  
+                  <div style={{ padding: '24px 24px 16px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                      <div style={{ overflow: 'hidden', paddingRight: '12px' }}>
+                        <h3 style={{ fontSize: '1.4rem', margin: '0 0 6px 0', color: '#fff', fontWeight: '800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {asset.title}
+                        </h3>
+                        <p style={{ margin: '0', fontSize: '1rem', color: '#94a3b8' }}>
+                          {asset.artist?.displayName}
+                        </p>
+                      </div>
+                      <span style={{ fontWeight: '800', color: '#10b981', fontSize: '1.25rem', flexShrink: 0 }}>
+                        {asset.licenses?.[0] ? (asset.licenses[0].priceCents / 100).toFixed(2) + ' €' : '--'}
                       </span>
-                    )}
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
+                      <span style={{ backgroundColor: 'rgba(56,189,248,0.1)', color: '#38bdf8', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>
+                        {asset.type}
+                      </span>
+                      <span style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
+                        {asset.bpm} BPM
+                      </span>
+                    </div>
                   </div>
+                </Link>
+
+                <div style={{ padding: '0 24px 24px 24px' }}>
+                  <PreviewPlayer src={`http://localhost:3000${asset.previewUrl}`} title={asset.title} />
                 </div>
+
               </div>
-            </Link>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>Pagal jūsų kriterijus kūrinių nerasta.</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
