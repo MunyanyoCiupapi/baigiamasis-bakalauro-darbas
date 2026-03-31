@@ -31,16 +31,75 @@ export default function HomePage() {
 
   if (!userIsLoggedIn) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '70vh', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '4rem', fontWeight: '900', margin: '0 0 10px 0', letterSpacing: '-0.04em' }}>
-          Bakis<span className="logo-accent">Music</span>
-        </h1>
-        <p style={{ color: '#94a3b8', fontSize: '1.2rem', marginBottom: '30px' }}>
-          Tiesioginis palaikymas nepriklausomiems atlikėjams.
-        </p>
-        <Link to="/login" className="primary-link-button" style={{ width: 'auto', padding: '14px 40px', borderRadius: '50px' }}>
-          Prisijungti
-        </Link>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '20px 20px 80px 20px' }}>
+        
+        <div style={{ textAlign: 'center', marginTop: '60px', marginBottom: '100px' }}>
+          <span style={{ 
+            backgroundColor: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '8px 16px', 
+            borderRadius: '999px', fontSize: '0.85rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' 
+          }}>
+            Muzikos platforma kūrėjams
+          </span>
+          <h1 style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', fontWeight: '900', margin: '24px 0 16px 0', letterSpacing: '-0.04em', lineHeight: '1.1', color: '#fff' }}>
+            Muzika, kuri įkvepia.<br />
+            <span className="gradient-text">Be tarpininkų.</span>
+          </h1>
+          <p style={{ color: '#94a3b8', fontSize: '1.25rem', maxWidth: '600px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
+            Atraskite unikalius instrumentus, loop'us ir garso pavyzdžius. Tiesiogiai palaikykite nepriklausomus atlikėjus ir kurkite be apribojimų.
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/register" className="primary-link-button" style={{ padding: '16px 40px', fontSize: '1.1rem', borderRadius: '999px' }}>
+              Pradėti dabar
+            </Link>
+            <Link to="/login" style={{ 
+              padding: '16px 40px', fontSize: '1.1rem', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.03)', 
+              color: '#fff', border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none', fontWeight: '700', transition: 'all 0.2s ease' 
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)' }}
+            >
+              Prisijungti
+            </Link>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '100px' }}>
+          
+          <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🎧</div>
+            <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '12px', fontWeight: '800' }}>Aukščiausia kokybė</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.6', margin: 0 }}>Kruopščiai atrinkti garsai jūsų produkcijai. Nuo hip-hop beat'ų iki kino filmų garso takelių.</p>
+          </div>
+
+          <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🤝</div>
+            <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '12px', fontWeight: '800' }}>Tiesioginis palaikymas</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.6', margin: 0 }}>Pirkdami licencijas, jūs tiesiogiai remiate autorius. Jokių paslėptų mokesčių ar tarpininkų.</p>
+          </div>
+
+          <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔒</div>
+            <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '12px', fontWeight: '800' }}>Saugūs atsiskaitymai</h3>
+            <p style={{ color: '#94a3b8', lineHeight: '1.6', margin: 0 }}>Visi mokėjimai apdorojami per saugią sistemą. Iškart po apmokėjimo gausite failus.</p>
+          </div>
+
+        </div>
+        <div style={{ 
+          textAlign: 'center', padding: '60px 20px', backgroundColor: 'rgba(56, 189, 248, 0.05)', 
+          borderRadius: '32px', border: '1px solid rgba(56, 189, 248, 0.1)',
+          backgroundImage: 'radial-gradient(circle at top right, rgba(56, 189, 248, 0.1), transparent 50%)'
+        }}>
+          <h2 style={{ fontSize: '2.5rem', color: '#fff', margin: '0 0 16px 0', fontWeight: '900', letterSpacing: '-0.02em' }}>
+            Esate muzikos kūrėjas?
+          </h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.15rem', maxWidth: '500px', margin: '0 auto 32px auto', lineHeight: '1.5' }}>
+            Prisijunkite prie BakisMusic, įkelkite savo kūrinius ir pradėkite uždirbti iš savo talento jau šiandien.
+          </p>
+          <Link to="/register" className="primary-link-button" style={{ borderRadius: '999px', padding: '16px 36px', fontSize: '1.05rem' }}>
+            Sukurti atlikėjo paskyrą
+          </Link>
+        </div>
+
       </div>
     );
   }
@@ -53,7 +112,7 @@ export default function HomePage() {
   });
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%', paddingBottom: '80px' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', paddingBottom: '80px' }}>
       
       <div style={{ textAlign: 'center', margin: '40px 0 50px 0' }}>
         <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: '800', color: '#fff', margin: '0 0 16px 0', letterSpacing: '-0.03em' }}>
@@ -65,6 +124,7 @@ export default function HomePage() {
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', alignItems: 'center', marginBottom: '50px' }}>
+        
         <input 
           type="text" 
           placeholder="Ieškoti..." 
@@ -113,70 +173,47 @@ export default function HomePage() {
         ) : filteredAssets.length > 0 ? (
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-            gap: '30px' 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+            gap: '40px 24px' 
           }}>
             {filteredAssets.map(asset => (
-              <div key={asset.id} style={{
-                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                borderRadius: '24px',
-                border: '1px solid rgba(255,255,255,0.08)',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,0.4)';
-                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              }}>
-                
-                <Link to={`/assets/${asset.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+              <Link key={asset.id} to={`/assets/${asset.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s' }}
+                     onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                     onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  
                   <div style={{
-                    width: '100%', aspectRatio: '1/1',
+                    width: '100%',
+                    aspectRatio: '1/1',
                     backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
-                    backgroundSize: 'cover', backgroundPosition: 'center',
-                    backgroundColor: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.05)'
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundColor: '#1e293b',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
+                    marginBottom: '16px',
+                    border: '1px solid rgba(255,255,255,0.05)'
                   }} />
                   
-                  <div style={{ padding: '24px 24px 16px 24px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                      <div style={{ overflow: 'hidden', paddingRight: '12px' }}>
-                        <h3 style={{ fontSize: '1.4rem', margin: '0 0 6px 0', color: '#fff', fontWeight: '800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {asset.title}
-                        </h3>
-                        <p style={{ margin: '0', fontSize: '1rem', color: '#94a3b8' }}>
-                          {asset.artist?.displayName}
-                        </p>
-                      </div>
-                      <span style={{ fontWeight: '800', color: '#10b981', fontSize: '1.25rem', flexShrink: 0 }}>
-                        {asset.licenses?.[0] ? (asset.licenses[0].priceCents / 100).toFixed(2) + ' €' : '--'}
-                      </span>
-                    </div>
-                    
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                      <span style={{ backgroundColor: 'rgba(56,189,248,0.1)', color: '#38bdf8', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>
-                        {asset.type}
-                      </span>
-                      <span style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
-                        {asset.bpm} BPM
-                      </span>
-                    </div>
+                  <h3 style={{ fontSize: '1.05rem', margin: '0 0 4px 0', color: '#f8fafc', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {asset.title}
+                  </h3>
+                  
+                  <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+                    {asset.artist?.displayName}
+                  </p>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#60a5fa', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {asset.type}
+                    </span>
+                    <span style={{ fontWeight: '700', color: '#fff', fontSize: '0.95rem' }}>
+                      {asset.licenses?.[0] ? (asset.licenses[0].priceCents / 100).toFixed(2) + ' €' : '--'}
+                    </span>
                   </div>
-                </Link>
 
-                <div style={{ padding: '0 24px 24px 24px' }}>
-                  <PreviewPlayer src={`http://localhost:3000${asset.previewUrl}`} title={asset.title} />
                 </div>
-
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
