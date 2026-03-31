@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { getAssets } from '../api/assetsApi';
 import { isLoggedIn } from '../utils/auth';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export default function HomePage() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,7 +186,7 @@ export default function HomePage() {
                   <div style={{
                     width: '100%',
                     aspectRatio: '1/1',
-                    backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
+                    backgroundImage: `url(${BACKEND_URL}${asset.coverUrl})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundColor: '#1e293b',

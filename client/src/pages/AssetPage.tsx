@@ -6,6 +6,8 @@ import { createPurchase } from '../api/purchasesApi';
 import PreviewPlayer from '../components/PreviewPlayer';
 import ChatWindow from '../components/ChatWindow';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export default function AssetPage() {
   const { id } = useParams();
   const loggedIn = isLoggedIn();
@@ -72,7 +74,7 @@ export default function AssetPage() {
       <section className="asset-view-hero">
         <div className="asset-view-cover-wrap">
           {asset.coverUrl ? (
-            <div className="asset-view-cover" style={{ backgroundImage: `url(http://localhost:3000${asset.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#1e293b' }}></div>
+            <div className="asset-view-cover" style={{ backgroundImage: `url(${BACKEND_URL}${asset.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#1e293b' }}></div>
           ) : (
             <div className="asset-view-cover asset-cover-placeholder">Be cover</div>
           )}
@@ -130,7 +132,7 @@ export default function AssetPage() {
 
           <div style={{ marginTop: '30px' }}>
             <h3 style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '16px', fontWeight: '700' }}>Preview</h3>
-            <PreviewPlayer src={`http://localhost:3000${asset.previewUrl}`} title={asset.title} />
+            <PreviewPlayer src={`${BACKEND_URL}${asset.previewUrl}`} title={asset.title} />
           </div>
         </div>
       </section>

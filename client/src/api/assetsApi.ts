@@ -1,6 +1,6 @@
 import { getToken } from '../utils/auth';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export async function createAsset(formData: FormData) {
   const token = getToken();
@@ -56,7 +56,7 @@ export async function deleteAsset(id: string) {
 export async function getAssetById(id: string) {
   const token = getToken();
 
-  const response = await fetch(`http://localhost:3000/assets/${id}`, {
+  const response = await fetch(`${API_URL}/assets/${id}`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -74,7 +74,7 @@ export async function getAssetById(id: string) {
 
 export async function getMyUploads() {
   const token = getToken();
-  const response = await fetch(`http://localhost:3000/assets/my-uploads`, {
+  const response = await fetch(`${API_URL}/assets/my-uploads`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

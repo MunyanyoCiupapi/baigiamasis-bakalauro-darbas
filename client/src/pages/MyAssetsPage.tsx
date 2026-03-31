@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getMyUploads } from '../api/assetsApi';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export default function MyAssetsPage() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ export default function MyAssetsPage() {
               >
                 <div style={{
                   height: '180px',
-                  backgroundImage: `url(http://localhost:3000${asset.coverUrl})`,
+                  backgroundImage: `url(${BACKEND_URL}${asset.coverUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   borderBottom: '1px solid rgba(255, 255, 255, 0.05)'

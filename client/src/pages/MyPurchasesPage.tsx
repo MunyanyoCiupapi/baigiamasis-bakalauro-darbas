@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom'; 
 import { downloadPurchaseFile, getMyPurchases } from '../api/purchasesApi';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export default function MyPurchasesPage() {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +82,7 @@ export default function MyPurchasesPage() {
             <div className="asset-card" key={purchase.id}>
               {purchase.asset.coverUrl ? (
                 <img
-                  src={`http://localhost:3000${purchase.asset.coverUrl}`}
+                  src={`${BACKEND_URL}${purchase.asset.coverUrl}`}
                   alt={purchase.asset.title}
                   className="asset-cover"
                 />
