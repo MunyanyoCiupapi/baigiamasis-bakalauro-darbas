@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom'; // PRIDĖTA
+import { useSearchParams } from 'react-router-dom'; 
 import { downloadPurchaseFile, getMyPurchases } from '../api/purchasesApi';
 
 export default function MyPurchasesPage() {

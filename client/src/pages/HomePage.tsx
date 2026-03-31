@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAssets } from '../api/assetsApi';
 import { isLoggedIn } from '../utils/auth';
-import PreviewPlayer from '../components/PreviewPlayer';
 
 export default function HomePage() {
   const [assets, setAssets] = useState<any[]>([]);

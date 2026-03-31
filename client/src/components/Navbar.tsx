@@ -52,6 +52,14 @@ export default function Navbar() {
               >
                 Mano pirkimai
               </NavLink>
+
+              {/* NAUJA NUORODA Į ŽINUTES */}
+              <NavLink
+                to="/messages"
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              >
+                Žinutės
+              </NavLink>
             </>
           )}
 

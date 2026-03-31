@@ -36,8 +36,11 @@ model User {
   displayName  String
   role         UserRole @default(USER)
 
-  assets    Asset[]
-  purchases Purchase[]
+  assets       Asset[]
+  purchases    Purchase[]
+  
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,4 +117,19 @@ model Purchase {
   @@index([buyerId])
   @@index([assetId])
   @@index([licenseId])
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  text       String
+  senderId   String
+  receiverId String
+  createdAt  DateTime @default(now())
+  isRead     Boolean  @default(false)
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
 }

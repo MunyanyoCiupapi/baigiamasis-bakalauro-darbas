@@ -11,6 +11,7 @@ import AssetPage from './pages/AssetPage';
 import MyPurchasesPage from './pages/MyPurchasesPage';
 import MySalesPage from './pages/MySalesPage';
 import MyAssetsPage from './pages/MyAssetsPage';
+import InboxPage from './pages/InboxPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/assets/:id" element={<AssetPage />} />
           <Route path="/my-purchases" element={<ProtectedRoute><MyPurchasesPage /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
           <Route path="/my-sales" element={<ArtistRoute><MySalesPage /></ArtistRoute>} />
           <Route path="/my-uploads" element={<ArtistRoute><MyAssetsPage /></ArtistRoute>} />
         </Routes>

@@ -40,14 +40,14 @@ export default function MySalesPage() {
         <div style={{ 
           overflowX: 'auto', 
           marginTop: '20px', 
-          backgroundColor: 'rgba(255, 255, 255, 0.03)', // Labai subtilus fonas visai lentelei
+          backgroundColor: 'rgba(255, 255, 255, 0.03)', 
           borderRadius: '12px',
-          border: '1px solid rgba(255, 255, 255, 0.08)' // Švelnus rėmelis
+          border: '1px solid rgba(255, 255, 255, 0.08)' 
         }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.05)', // Tamsus, pusiau permatomas fonas antraštėms
+                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
                 borderBottom: '2px solid rgba(255, 255, 255, 0.1)' 
               }}>
                 <th style={{ padding: '16px 12px', color: '#a0aec0', fontWeight: '600', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '0.05em' }}>Data</th>
