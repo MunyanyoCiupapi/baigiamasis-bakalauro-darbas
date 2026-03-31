@@ -33,7 +33,7 @@ export default function InboxPage() {
     fetchInbox();
   }, [user?.id]);
 
-  
+
   if (!user) return <p style={{ textAlign: 'center', marginTop: '50px' }}>Prisijunkite, kad matytumėte žinutes.</p>;
 
   return (
