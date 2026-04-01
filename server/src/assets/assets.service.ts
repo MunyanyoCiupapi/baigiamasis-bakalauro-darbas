@@ -22,7 +22,6 @@ export class AssetsService {
         (error, result) => {
           if (error) return reject(error);
           
-          // PRIDĖTA: Patikriname, ar result egzistuoja
           if (!result) return reject(new Error('Cloudinary negrąžino rezultato')); 
           
           resolve(result.secure_url);
