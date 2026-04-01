@@ -179,14 +179,20 @@ export class PurchasesService {
       throw new BadRequestException('Neturite prieigos prie šio failo');
     }
 
-    const relativeFilePath = purchase.asset.fileUrl.startsWith('/')
-      ? purchase.asset.fileUrl.slice(1)
-      : purchase.asset.fileUrl;
+    const fileUrl = purchase.asset.fileUrl;
+
+    if (fileUrl.startsWith('http')) {
+      return res.redirect(fileUrl);
+    }
+
+    const relativeFilePath = fileUrl.startsWith('/')
+      ? fileUrl.slice(1)
+      : fileUrl;
 
     const absoluteFilePath = path.join(process.cwd(), relativeFilePath);
 
     if (!fs.existsSync(absoluteFilePath)) {
-      throw new NotFoundException('Failas nerastas serveryje');
+      throw new NotFoundException('Failas nerastas nei debesyje, nei serveryje');
     }
 
     return res.download(absoluteFilePath);
