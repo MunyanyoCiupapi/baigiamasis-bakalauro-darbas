@@ -5,12 +5,33 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { Response } from 'express';
-import * as path from 'path';
-import * as fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import * as streamifier from 'streamifier';
 
 @Injectable()
 export class AssetsService {
   constructor(private readonly prisma: PrismaService) {}
+
+ private async uploadToCloudinary(file: any, folder: string, isAudio: boolean = false): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: isAudio ? 'video' : 'auto', 
+          folder: `bakalauras/${folder}`,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          
+          // PRIDĖTA: Patikriname, ar result egzistuoja
+          if (!result) return reject(new Error('Cloudinary negrąžino rezultato')); 
+          
+          resolve(result.secure_url);
+        },
+      );
+
+      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+    });
+  }
 
   async create(body: any, currentUser: any, files: any) {
     const {
@@ -62,9 +83,11 @@ export class AssetsService {
       throw new BadRequestException('Sistemoje nėra licencijų');
     }
 
-    const fileUrl = `/uploads/audio/${audioFile.filename}`;
-    const previewUrl = `/uploads/previews/${previewFile.filename}`;
-    const coverUrl = coverFile ? `/uploads/covers/${coverFile.filename}` : null;
+    const [fileUrl, previewUrl, coverUrl] = await Promise.all([
+      this.uploadToCloudinary(audioFile, 'audio', true),
+      this.uploadToCloudinary(previewFile, 'previews', true),
+      coverFile ? this.uploadToCloudinary(coverFile, 'covers', false) : Promise.resolve(null),
+    ]);
 
     const asset = await this.prisma.asset.create({
       data: {
@@ -75,8 +98,8 @@ export class AssetsService {
         bpm: bpm ? Number(bpm) : null,
         musicalKey,
         durationSec: durationSec ? Number(durationSec) : null,
-        fileUrl,
-        previewUrl,
+        fileUrl,    
+        previewUrl, 
         coverUrl,
         artistId: currentUser.userId,
       },
@@ -182,17 +205,7 @@ export class AssetsService {
       throw new NotFoundException('Preview failas nerastas');
     }
 
-    const relativeFilePath = asset.previewUrl.startsWith('/')
-      ? asset.previewUrl.slice(1)
-      : asset.previewUrl;
-
-    const absoluteFilePath = path.join(process.cwd(), relativeFilePath);
-
-    if (!fs.existsSync(absoluteFilePath)) {
-      throw new NotFoundException('Preview failas nerastas serveryje');
-    }
-
-    return res.sendFile(absoluteFilePath);
+    return res.redirect(asset.previewUrl);
   }
 
   async remove(id: string, currentUser: any) {

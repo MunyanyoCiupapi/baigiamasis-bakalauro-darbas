@@ -14,15 +14,10 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AssetsService } from './assets.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer'; 
 import { ArtistOnlyGuard } from '../auth/roles.guard';
 import type { Response } from 'express';
 
-function generateFileName(originalName: string) {
-  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-  return `${uniqueSuffix}${extname(originalName)}`;
-}
 
 @Controller('assets')
 export class AssetsController {
@@ -38,22 +33,7 @@ export class AssetsController {
         { name: 'cover', maxCount: 1 },
       ],
       {
-        storage: diskStorage({
-          destination: (req, file, cb) => {
-            if (file.fieldname === 'audio') {
-              cb(null, './uploads/audio');
-            } else if (file.fieldname === 'preview') {
-              cb(null, './uploads/previews');
-            } else if (file.fieldname === 'cover') {
-              cb(null, './uploads/covers');
-            } else {
-              cb(null, './uploads');
-            }
-          },
-          filename: (req, file, cb) => {
-            cb(null, generateFileName(file.originalname));
-          },
-        }),
+        storage: memoryStorage(),
       },
     ),
   )
