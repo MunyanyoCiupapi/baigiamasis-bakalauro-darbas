@@ -12,7 +12,11 @@ import { ChatService } from './chat.service';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:5173', 
+    origin: [
+      'http://localhost:5173', 
+      'https://baigiamasis-bakalauro-darbas.vercel.app'
+    ],
+    methods: ['GET', 'POST'],
     credentials: true,
   },
 })

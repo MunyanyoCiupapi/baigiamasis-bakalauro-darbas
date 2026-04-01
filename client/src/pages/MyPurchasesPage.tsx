@@ -4,6 +4,14 @@ import { downloadPurchaseFile, getMyPurchases } from '../api/purchasesApi';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+const getFileUrl = (url: string | undefined | null) => {
+  if (!url) return '';
+  if (url.includes('cloudinary') || url.startsWith('http')) {
+    return url.replace('https//', 'https://').replace('http//', 'http://');
+  }
+  return `${BACKEND_URL}${url}`;
+};
+
 export default function MyPurchasesPage() {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +33,6 @@ export default function MyPurchasesPage() {
         setLoading(false);
       }
     }
-
     loadPurchases();
   }, []);
 
@@ -36,29 +43,24 @@ export default function MyPurchasesPage() {
   ) => {
     try {
       setError('');
-
       const blob = await downloadPurchaseFile(purchaseId);
-
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
 
-      const extension = fileUrl.split('.').pop() || 'mp3';
+      const extension = fileUrl.split('.').pop()?.split('?')[0] || 'mp3';
       a.download = `${title}.${extension}`;
 
       document.body.appendChild(a);
       a.click();
       a.remove();
-
       window.URL.revokeObjectURL(blobUrl);
     } catch (err: any) {
       setError(err.message || 'Nepavyko atsisiųsti failo');
     }
   };
 
-  if (loading) {
-    return <p className="info-text">Kraunami pirkimai...</p>;
-  }
+  if (loading) return <p className="info-text">Kraunami pirkimai...</p>;
 
   return (
     <div className="my-assets-section">
@@ -82,7 +84,7 @@ export default function MyPurchasesPage() {
             <div className="asset-card" key={purchase.id}>
               {purchase.asset.coverUrl ? (
                 <img
-                  src={`${BACKEND_URL}${purchase.asset.coverUrl}`}
+                  src={getFileUrl(purchase.asset.coverUrl)}
                   alt={purchase.asset.title}
                   className="asset-cover"
                 />
@@ -94,33 +96,21 @@ export default function MyPurchasesPage() {
 
               <div className="asset-card-body">
                 <h3>{purchase.asset.title}</h3>
+                <p className="asset-meta">Autorius: {purchase.asset.artist?.displayName || 'Nežinomas'}</p>
+                <p className="asset-meta">Licencija: {purchase.license.name}</p>
+                <p className="asset-meta">Kaina: {(purchase.priceCents / 100).toFixed(2)} €</p>
 
-                <p className="asset-meta">
-                  Autorius: {purchase.asset.artist?.displayName || 'Nežinomas'}
-                </p>
-
-                <p className="asset-meta">
-                  Licencija: {purchase.license.name}
-                </p>
-
-                <p className="asset-meta">
-                  Kaina: {(purchase.priceCents / 100).toFixed(2)} €
-                </p>
-
-                <a
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDownload(
-                      purchase.id,
-                      purchase.asset.fileUrl,
-                      purchase.asset.title
-                    );
-                  }}
+                <button
+                  onClick={() => handleDownload(
+                    purchase.id,
+                    purchase.asset.fileUrl,
+                    purchase.asset.title
+                  )}
                   className="primary-link-button"
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', width: '100%', border: 'none' }}
                 >
                   Atsisiųsti failą
-                </a>
+                </button>
               </div>
             </div>
           ))}
