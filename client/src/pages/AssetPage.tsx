@@ -10,9 +10,11 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const getFileUrl = (url: string | undefined | null) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+
+  if (url.includes('cloudinary') || url.startsWith('http')) {
+    return url.replace('https//', 'https://').replace('http//', 'http://');
   }
+  
   return `${BACKEND_URL}${url}`;
 };
 
