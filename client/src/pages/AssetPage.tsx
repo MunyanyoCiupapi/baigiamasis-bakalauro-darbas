@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // Pridėtas useNavigate
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getAssetById } from '../api/assetsApi';
 import { getUser, isLoggedIn } from '../utils/auth';
 import { createPurchase } from '../api/purchasesApi';
@@ -10,11 +10,9 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const getFileUrl = (url: string | undefined | null) => {
   if (!url) return '';
-
   if (url.includes('cloudinary') || url.startsWith('http')) {
     return url.replace('https//', 'https://').replace('http//', 'http://');
   }
-  
   return `${BACKEND_URL}${url}`;
 };
 
@@ -28,7 +26,6 @@ export default function AssetPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  
   const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
@@ -44,10 +41,7 @@ export default function AssetPage() {
         setLoading(false);
       }
     }
-
-    if (id) {
-      loadAsset();
-    }
+    if (id) loadAsset();
   }, [id]);
 
   const handleBuy = async (licenseId: string) => {
@@ -55,7 +49,6 @@ export default function AssetPage() {
       setError('Norėdami pirkti, turite prisijungti');
       return;
     }
-
     try {
       setError('');
       setMessage('Nukreipiama į saugų apmokėjimo langą...');
@@ -71,30 +64,34 @@ export default function AssetPage() {
     }
   };
 
-  // NAUJA: Kūrinio ištrynimo funkcija
   const handleDelete = async () => {
-    if (!window.confirm('Ar tikrai norite ištrinti šį kūrinį? Šio veiksmo atšaukti negalima.')) {
+    if (!window.confirm('⚠️ Ar tikrai norite ištrinti šį kūrinį? Šis veiksmas yra negražinamas.')) {
       return;
     }
     
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('accessToken'); 
       
+      if (!token) {
+        throw new Error('Prisijungimo seansas baigėsi. Prisijunkite iš naujo.');
+      }
+
       const response = await fetch(`${BACKEND_URL}/assets/${asset.id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`, 
+          'Content-Type': 'application/json'
         }
       });
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || 'Klaida trinant kūrinį');
+        throw new Error(errData.message || 'Nepavyko ištrinti kūrinio.');
       }
 
-      alert('Kūrinys sėkmingai ištrintas!');
-      navigate('/my-assets'); 
+      alert('Kūrinys sėkmingai pašalintas.');
+      navigate('/my-assets');
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -149,21 +146,39 @@ export default function AssetPage() {
               {loggedIn && isOwner && (
                 <button 
                   onClick={handleDelete}
+                  className="delete-btn-modern"
                   style={{
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: '#fca5a5',
-                    padding: '8px 20px', borderRadius: '999px', fontSize: '0.9rem', fontWeight: '600',
-                    cursor: 'pointer', transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #ef4444',
+                    color: '#ef4444',
+                    padding: '8px 22px',
+                    borderRadius: '999px',
+                    fontSize: '0.9rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 0 0 0 rgba(239, 68, 68, 0)'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    e.currentTarget.style.backgroundColor = '#ef4444';
+                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.boxShadow = '0 0 0 0 rgba(239, 68, 68, 0)';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  🗑️ Ištrinti kūrinį
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                  Ištrinti kūrinį
                 </button>
               )}
             </div>
