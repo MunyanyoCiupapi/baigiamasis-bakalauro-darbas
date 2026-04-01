@@ -4,6 +4,14 @@ import { getMyUploads } from '../api/assetsApi';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+const getFileUrl = (url: string | undefined | null) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `${BACKEND_URL}${url}`;
+};
+
 export default function MyAssetsPage() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,22 +48,13 @@ export default function MyAssetsPage() {
         <p className="info-text">Dar neįkėlėte jokių kūrinių.</p>
       ) : (
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          gap: '24px'
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px'
         }}>
           {assets.map((asset) => (
             <Link key={asset.id} to={`/assets/${asset.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <div style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column'
+                backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden', transition: 'all 0.3s ease', cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-6px)';
@@ -68,12 +67,11 @@ export default function MyAssetsPage() {
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
               }}
               >
+                {/* PAKEISTA: Naudojamas getFileUrl */}
                 <div style={{
                   height: '180px',
-                  backgroundImage: `url(${BACKEND_URL}${asset.coverUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                  backgroundImage: `url(${getFileUrl(asset.coverUrl)})`,
+                  backgroundSize: 'cover', backgroundPosition: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
                 }}></div>
                 
                 <div style={{ padding: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -88,12 +86,8 @@ export default function MyAssetsPage() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                     <span style={{ 
-                      backgroundColor: 'rgba(255,255,255,0.05)', 
-                      padding: '4px 10px', 
-                      borderRadius: '8px', 
-                      fontSize: '0.8rem', 
-                      color: '#94a3b8',
-                      fontWeight: '500'
+                      backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '8px', 
+                      fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500'
                     }}>
                       {asset.bpm} BPM
                     </span>

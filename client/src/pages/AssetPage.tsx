@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // Pridėtas useNavigate
 import { getAssetById } from '../api/assetsApi';
 import { getUser, isLoggedIn } from '../utils/auth';
 import { createPurchase } from '../api/purchasesApi';
@@ -8,8 +8,17 @@ import ChatWindow from '../components/ChatWindow';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+const getFileUrl = (url: string | undefined | null) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `${BACKEND_URL}${url}`;
+};
+
 export default function AssetPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const loggedIn = isLoggedIn();
   const user = getUser();
 
@@ -60,6 +69,36 @@ export default function AssetPage() {
     }
   };
 
+  // NAUJA: Kūrinio ištrynimo funkcija
+  const handleDelete = async () => {
+    if (!window.confirm('Ar tikrai norite ištrinti šį kūrinį? Šio veiksmo atšaukti negalima.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${BACKEND_URL}/assets/${asset.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Klaida trinant kūrinį');
+      }
+
+      alert('Kūrinys sėkmingai ištrintas!');
+      navigate('/my-assets'); 
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
   if (loading) return <p className="info-text">Įkraunama...</p>;
   if (!asset) return <p className="error">Šis kūrinys nebuvo rastas.</p>;
 
@@ -74,7 +113,7 @@ export default function AssetPage() {
       <section className="asset-view-hero">
         <div className="asset-view-cover-wrap">
           {asset.coverUrl ? (
-            <div className="asset-view-cover" style={{ backgroundImage: `url(${BACKEND_URL}${asset.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#1e293b' }}></div>
+            <div className="asset-view-cover" style={{ backgroundImage: `url(${getFileUrl(asset.coverUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#1e293b' }}></div>
           ) : (
             <div className="asset-view-cover asset-cover-placeholder">Be cover</div>
           )}
@@ -85,32 +124,44 @@ export default function AssetPage() {
             <p className="asset-view-kicker">{asset.type || 'TRACK'}</p>
             <h1 className="asset-view-title">{asset.title}</h1>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px', flexWrap: 'wrap' }}>
               <p className="asset-view-artist" style={{ margin: 0 }}>Autorius: {asset.artist.displayName}</p>
               
               {loggedIn && !isOwner && (
                 <button 
                   onClick={() => setShowChat(!showChat)}
                   style={{
-                    width: 'max-content',
-                    flex: '0 0 auto',     
-                    margin: 0,
+                    width: 'max-content', flex: '0 0 auto', margin: 0,
                     backgroundColor: showChat ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
                     border: showChat ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
                     color: showChat ? '#38bdf8' : '#e2e8f0',
-                    padding: '8px 20px',
-                    borderRadius: '999px',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: 'none'
+                    padding: '8px 20px', borderRadius: '999px', fontSize: '0.9rem', fontWeight: '600',
+                    cursor: 'pointer', transition: 'all 0.2s ease', display: 'inline-flex',
+                    alignItems: 'center', gap: '8px', boxShadow: 'none'
                   }}
                 >
                   💬 {showChat ? 'Uždaryti chatą' : 'Parašyti autoriui'}
+                </button>
+              )}
+
+              {loggedIn && isOwner && (
+                <button 
+                  onClick={handleDelete}
+                  style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '8px 20px', borderRadius: '999px', fontSize: '0.9rem', fontWeight: '600',
+                    cursor: 'pointer', transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                  }}
+                >
+                  🗑️ Ištrinti kūrinį
                 </button>
               )}
             </div>
@@ -132,7 +183,7 @@ export default function AssetPage() {
 
           <div style={{ marginTop: '30px' }}>
             <h3 style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '16px', fontWeight: '700' }}>Preview</h3>
-            <PreviewPlayer src={`${BACKEND_URL}${asset.previewUrl}`} title={asset.title} />
+            <PreviewPlayer src={getFileUrl(asset.previewUrl)} title={asset.title} />
           </div>
         </div>
       </section>
@@ -166,7 +217,7 @@ export default function AssetPage() {
 
       {showChat && loggedIn && user && (
         <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-          <ChatWindow currentUserId={user.id} receiverId={asset.artist.id} receiverName={asset.artist.displayName} onClose={() => setShowChat(false)} />
+          <ChatWindow currentUserId={user!.id} receiverId={asset.artist.id} receiverName={asset.artist.displayName} onClose={() => setShowChat(false)} />
         </div>
       )}
     </div>
