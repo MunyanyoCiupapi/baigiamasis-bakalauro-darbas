@@ -228,4 +228,70 @@ export class AssetsService {
       message: 'Kūrinys sėkmingai ištrintas',
     };
   }
+
+  async update(id: string, body: any, currentUser: any) {
+    const asset = await this.prisma.asset.findUnique({
+      where: { id },
+    });
+
+    if (!asset) {
+      throw new NotFoundException('Asset nerastas');
+    }
+
+    if (asset.artistId !== currentUser.userId) {
+      throw new BadRequestException('Negalite redaguoti ne savo kūrinio');
+    }
+
+    const data: any = {};
+
+    if (typeof body.title === 'string') {
+      if (!body.title.trim()) {
+        throw new BadRequestException('Pavadinimas negali būti tuščias');
+      }
+      data.title = body.title.trim();
+    }
+
+    if (typeof body.description === 'string' || body.description === null) {
+      data.description = body.description ? body.description.trim() : null;
+    }
+
+    if (typeof body.genre === 'string' || body.genre === null) {
+      data.genre = body.genre ? body.genre.trim() : null;
+    }
+
+    if (typeof body.musicalKey === 'string' || body.musicalKey === null) {
+      data.musicalKey = body.musicalKey ? body.musicalKey.trim() : null;
+    }
+
+    if (body.type !== undefined) {
+      if (!['TRACK', 'LOOP', 'SAMPLE'].includes(body.type)) {
+        throw new BadRequestException('Neteisingas kūrinio tipas');
+      }
+      data.type = body.type;
+    }
+
+    if (body.bpm !== undefined) {
+      data.bpm = body.bpm === null || body.bpm === '' ? null : Number(body.bpm);
+      if (data.bpm !== null && Number.isNaN(data.bpm)) {
+        throw new BadRequestException('Neteisingas BPM formatas');
+      }
+    }
+
+    if (body.durationSec !== undefined) {
+      data.durationSec =
+        body.durationSec === null || body.durationSec === ''
+          ? null
+          : Number(body.durationSec);
+      if (data.durationSec !== null && Number.isNaN(data.durationSec)) {
+        throw new BadRequestException('Neteisinga trukmės reikšmė');
+      }
+    }
+
+    await this.prisma.asset.update({
+      where: { id },
+      data,
+    });
+
+    return this.findOne(id);
+  }
 }

@@ -87,3 +87,23 @@ export async function getMyUploads() {
 
   return response.json();
 }
+
+export async function updateAsset(id: string, payload: Record<string, unknown>) {
+  const token = getToken();
+  const response = await fetch(`${API_URL}/assets/${id}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Nepavyko atnaujinti kūrinio');
+  }
+
+  return result;
+}

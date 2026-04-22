@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   Res,
@@ -75,5 +76,11 @@ export class AssetsController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: any) {
     return this.assetsService.remove(id, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard, ArtistOnlyGuard)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: any, @Req() req: any) {
+    return this.assetsService.update(id, body, req.user);
   }
 }

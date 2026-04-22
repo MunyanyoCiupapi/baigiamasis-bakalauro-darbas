@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getAssetById } from '../api/assetsApi';
+import { getAssetById, updateAsset } from '../api/assetsApi';
 import { getUser, isLoggedIn } from '../utils/auth';
 import { createPurchase } from '../api/purchasesApi';
 import PreviewPlayer from '../components/PreviewPlayer';
@@ -27,6 +27,17 @@ export default function AssetPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [showChat, setShowChat] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    type: 'TRACK',
+    genre: '',
+    bpm: '',
+    musicalKey: '',
+    durationSec: '',
+  });
 
   useEffect(() => {
     async function loadAsset() {
@@ -35,6 +46,15 @@ export default function AssetPage() {
         setError('');
         const result = await getAssetById(id!);
         setAsset(result);
+        setEditForm({
+          title: result.title || '',
+          description: result.description || '',
+          type: result.type || 'TRACK',
+          genre: result.genre || '',
+          bpm: result.bpm?.toString() || '',
+          musicalKey: result.musicalKey || '',
+          durationSec: result.durationSec?.toString() || '',
+        });
       } catch (err: any) {
         setError(err.message || 'Nepavyko užkrauti kūrinio');
       } finally {
@@ -98,6 +118,33 @@ export default function AssetPage() {
     }
   };
 
+  const handleSave = async () => {
+    if (!asset) return;
+    try {
+      setIsSaving(true);
+      setError('');
+      setMessage('');
+
+      const updated = await updateAsset(asset.id, {
+        title: editForm.title,
+        description: editForm.description || null,
+        type: editForm.type,
+        genre: editForm.genre || null,
+        bpm: editForm.bpm ? Number(editForm.bpm) : null,
+        musicalKey: editForm.musicalKey || null,
+        durationSec: editForm.durationSec ? Number(editForm.durationSec) : null,
+      });
+
+      setAsset(updated);
+      setEditMode(false);
+      setMessage('Kūrinio informacija atnaujinta.');
+    } catch (err: any) {
+      setError(err.message || 'Nepavyko atnaujinti kūrinio');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (loading) return <p className="info-text">Įkraunama...</p>;
   if (!asset) return <p className="error">Šis kūrinys nebuvo rastas.</p>;
 
@@ -120,8 +167,29 @@ export default function AssetPage() {
 
         <div className="asset-view-main">
           <div className="asset-view-header">
-            <p className="asset-view-kicker">{asset.type || 'TRACK'}</p>
-            <h1 className="asset-view-title">{asset.title}</h1>
+            {editMode ? (
+              <select
+                value={editForm.type}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, type: e.target.value }))}
+                style={{ maxWidth: 180, marginBottom: 12, borderRadius: 8, padding: '6px 10px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+              >
+                <option value="TRACK">TRACK</option>
+                <option value="LOOP">LOOP</option>
+                <option value="SAMPLE">SAMPLE</option>
+              </select>
+            ) : (
+              <p className="asset-view-kicker">{asset.type || 'TRACK'}</p>
+            )}
+
+            {editMode ? (
+              <input
+                value={editForm.title}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
+                style={{ width: '100%', maxWidth: 460, borderRadius: 10, padding: '10px 12px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '1.75rem', fontWeight: 800 }}
+              />
+            ) : (
+              <h1 className="asset-view-title">{asset.title}</h1>
+            )}
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px', flexWrap: 'wrap' }}>
               <p className="asset-view-artist" style={{ margin: 0 }}>Autorius: {asset.artist.displayName}</p>
@@ -144,57 +212,81 @@ export default function AssetPage() {
               )}
 
               {loggedIn && isOwner && (
-                <button 
-                  onClick={handleDelete}
-                  className="delete-btn-modern"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #ef4444',
-                    color: '#ef4444',
-                    padding: '8px 22px',
-                    borderRadius: '999px',
-                    fontSize: '0.9rem',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 0 0 0 rgba(239, 68, 68, 0)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ef4444';
-                    e.currentTarget.style.color = '#fff';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#ef4444';
-                    e.currentTarget.style.boxShadow = '0 0 0 0 rgba(239, 68, 68, 0)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                  </svg>
-                  Ištrinti kūrinį
-                </button>
+                <>
+                  <button
+                    onClick={() => setEditMode((prev) => !prev)}
+                    style={{ border: '1px solid #38bdf8', color: '#38bdf8', background: 'transparent', borderRadius: '999px', padding: '8px 18px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {editMode ? 'Atšaukti redagavimą' : 'Redaguoti informaciją'}
+                  </button>
+                  <button 
+                    onClick={handleDelete}
+                    className="delete-btn-modern"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid #ef4444',
+                      color: '#ef4444',
+                      padding: '8px 22px',
+                      borderRadius: '999px',
+                      fontSize: '0.9rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: '0 0 0 0 rgba(239, 68, 68, 0)'
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Ištrinti kūrinį
+                  </button>
+                </>
               )}
             </div>
           </div>
 
           <div className="asset-view-tags">
-            {asset.genre && <span className="asset-tag">{asset.genre}</span>}
-            {asset.bpm && <span className="asset-tag">{asset.bpm} BPM</span>}
-            {asset.musicalKey && <span className="asset-tag">{asset.musicalKey}</span>}
-            {asset.durationSec && <span className="asset-tag">{asset.durationSec} s</span>}
+            {editMode ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', width: '100%', maxWidth: 600 }}>
+                <input placeholder="Žanras" value={editForm.genre} onChange={(e) => setEditForm((prev) => ({ ...prev, genre: e.target.value }))} style={{ borderRadius: 8, padding: '8px 10px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }} />
+                <input placeholder="BPM" type="number" value={editForm.bpm} onChange={(e) => setEditForm((prev) => ({ ...prev, bpm: e.target.value }))} style={{ borderRadius: 8, padding: '8px 10px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }} />
+                <input placeholder="Tonacija" value={editForm.musicalKey} onChange={(e) => setEditForm((prev) => ({ ...prev, musicalKey: e.target.value }))} style={{ borderRadius: 8, padding: '8px 10px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }} />
+                <input placeholder="Trukmė (s)" type="number" value={editForm.durationSec} onChange={(e) => setEditForm((prev) => ({ ...prev, durationSec: e.target.value }))} style={{ borderRadius: 8, padding: '8px 10px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }} />
+              </div>
+            ) : (
+              <>
+                {asset.genre && <span className="asset-tag">{asset.genre}</span>}
+                {asset.bpm && <span className="asset-tag">{asset.bpm} BPM</span>}
+                {asset.musicalKey && <span className="asset-tag">{asset.musicalKey}</span>}
+                {asset.durationSec && <span className="asset-tag">{asset.durationSec} s</span>}
+              </>
+            )}
           </div>
 
-          {asset.description && (
+          {(asset.description || editMode) && (
             <div className="asset-view-description-box">
               <h3>Aprašymas</h3>
-              <p>{asset.description}</p>
+              {editMode ? (
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  style={{ width: '100%', borderRadius: 8, padding: '10px 12px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+                />
+              ) : (
+                <p>{asset.description}</p>
+              )}
+            </div>
+          )}
+
+          {editMode && (
+            <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+              <button onClick={handleSave} disabled={isSaving} className="buy-button" style={{ maxWidth: 220 }}>
+                {isSaving ? 'Saugoma...' : 'Išsaugoti pakeitimus'}
+              </button>
             </div>
           )}
 
