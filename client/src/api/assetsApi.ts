@@ -23,7 +23,9 @@ export async function createAsset(formData: FormData) {
 }
 
 export async function getAssets() {
-  const response = await fetch(`${API_URL}/assets`);
+  const response = await fetch(`${API_URL}/assets`, {
+    cache: 'no-store',
+  });
 
   const result = await response.json();
 
@@ -58,6 +60,7 @@ export async function getAssetById(id: string) {
 
   const response = await fetch(`${API_URL}/assets/${id}`, {
     method: 'GET',
+    cache: 'no-store',
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -75,6 +78,7 @@ export async function getAssetById(id: string) {
 export async function getMyUploads() {
   const token = getToken();
   const response = await fetch(`${API_URL}/assets/my-uploads`, {
+    cache: 'no-store',
     headers: {
       Authorization: `Bearer ${token}`,
     },

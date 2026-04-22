@@ -92,6 +92,7 @@ model AssetLicense {
   assetId    String
   licenseId  String
   priceCents Int
+  description String?
 
   asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
   license License @relation(fields: [licenseId], references: [id])

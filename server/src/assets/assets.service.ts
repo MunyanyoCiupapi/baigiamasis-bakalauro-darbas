@@ -232,6 +232,9 @@ export class AssetsService {
   async update(id: string, body: any, currentUser: any) {
     const asset = await this.prisma.asset.findUnique({
       where: { id },
+      include: {
+        licenses: true,
+      },
     });
 
     if (!asset) {
@@ -284,6 +287,48 @@ export class AssetsService {
           : Number(body.durationSec);
       if (data.durationSec !== null && Number.isNaN(data.durationSec)) {
         throw new BadRequestException('Neteisinga trukmės reikšmė');
+      }
+    }
+
+    if (Array.isArray(body.licenses)) {
+      for (const licenseUpdate of body.licenses) {
+        const existingLicense = asset.licenses.find(
+          (item) =>
+            item.licenseId === licenseUpdate.licenseId ||
+            item.id === licenseUpdate.assetLicenseId,
+        );
+
+        if (!existingLicense) {
+          throw new BadRequestException('Nurodyta licencija nerasta');
+        }
+
+        const licenseData: any = {};
+
+        if (licenseUpdate.priceCents !== undefined) {
+          const priceCents = Number(licenseUpdate.priceCents);
+
+          if (!Number.isInteger(priceCents) || priceCents < 0) {
+            throw new BadRequestException('Neteisinga licencijos kaina');
+          }
+
+          licenseData.priceCents = priceCents;
+        }
+
+        if (
+          typeof licenseUpdate.description === 'string' ||
+          licenseUpdate.description === null
+        ) {
+          licenseData.description = licenseUpdate.description
+            ? licenseUpdate.description.trim()
+            : null;
+        }
+
+        if (Object.keys(licenseData).length > 0) {
+          await this.prisma.assetLicense.update({
+            where: { id: existingLicense.id },
+            data: licenseData,
+          });
+        }
       }
     }
 

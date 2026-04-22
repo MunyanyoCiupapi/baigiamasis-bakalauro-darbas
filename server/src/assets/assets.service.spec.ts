@@ -1,12 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-describe('AssetsService kūrinių valdymo logika', () => {
+describe('AssetsService asset management', () => {
   let service: AssetsService;
 
   const mockPrismaService = {
@@ -18,9 +15,11 @@ describe('AssetsService kūrinių valdymo logika', () => {
       findMany: jest.fn(),
       findUnique: jest.fn(),
       delete: jest.fn(),
+      update: jest.fn(),
     },
     assetLicense: {
       create: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -42,11 +41,11 @@ describe('AssetsService kūrinių valdymo logika', () => {
     jest.clearAllMocks();
   });
 
-  it('turi būti sukurtas', () => {
+  it('should be created', () => {
     expect(service).toBeDefined();
   });
 
-  it('turi grąžinti klaidą, kai trūksta privalomų laukų', async () => {
+  it('should fail when required fields are missing', async () => {
     await expect(
       service.create(
         {
@@ -59,7 +58,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi grąžinti klaidą, kai nėra audio failo', async () => {
+  it('should fail when audio file is missing', async () => {
     await expect(
       service.create(
         {
@@ -75,7 +74,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi grąžinti klaidą, kai nėra preview failo', async () => {
+  it('should fail when preview file is missing', async () => {
     await expect(
       service.create(
         {
@@ -91,7 +90,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi grąžinti klaidą, kai nepateiktos licencijų kainos', async () => {
+  it('should fail when prices are missing', async () => {
     await expect(
       service.create(
         {
@@ -107,13 +106,13 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi grąžinti klaidą, kai prices formatas neteisingas', async () => {
+  it('should fail when prices format is invalid', async () => {
     await expect(
       service.create(
         {
           title: 'Test Track',
           type: 'TRACK',
-          prices: '{neteisingas json}',
+          prices: '{invalid json}',
         },
         { userId: 'artist-1' },
         {
@@ -124,7 +123,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi grąžinti klaidą, kai sistemoje nėra licencijų', async () => {
+  it('should fail when there are no licenses in the system', async () => {
     mockPrismaService.license.findMany.mockResolvedValue([]);
 
     await expect(
@@ -143,7 +142,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi sėkmingai sukurti kūrinį', async () => {
+  it('should create an asset successfully', async () => {
     const body = {
       title: 'Test Track',
       description: 'Test description',
@@ -221,7 +220,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     expect(result).toEqual(finalAsset);
   });
 
-  it('turi grąžinti visus kūrinius', async () => {
+  it('should return all assets', async () => {
     const assets = [{ id: 'asset-1', title: 'Track 1' }];
     mockPrismaService.asset.findMany.mockResolvedValue(assets);
 
@@ -251,7 +250,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     expect(result).toEqual(assets);
   });
 
-  it('turi grąžinti vartotojo įkeltus kūrinius', async () => {
+  it('should return uploads for the current user', async () => {
     const uploads = [{ id: 'asset-1', title: 'Track 1' }];
     mockPrismaService.asset.findMany.mockResolvedValue(uploads);
 
@@ -276,7 +275,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     expect(result).toEqual(uploads);
   });
 
-  it('turi grąžinti vieną kūrinį pagal id', async () => {
+  it('should return one asset by id', async () => {
     const asset = {
       id: 'asset-1',
       title: 'Track 1',
@@ -308,15 +307,15 @@ describe('AssetsService kūrinių valdymo logika', () => {
     expect(result).toEqual(asset);
   });
 
-  it('turi grąžinti klaidą, kai kūrinys nerastas pagal id', async () => {
+  it('should fail when an asset is not found by id', async () => {
     mockPrismaService.asset.findUnique.mockResolvedValue(null);
 
-    await expect(service.findOne('nerastas-id')).rejects.toThrow(
+    await expect(service.findOne('missing-id')).rejects.toThrow(
       NotFoundException,
     );
   });
 
-  it('turi peradresuoti į preview failą', async () => {
+  it('should redirect to preview file', async () => {
     const asset = {
       id: 'asset-1',
       previewUrl: 'https://cloudinary.com/preview.mp3',
@@ -336,7 +335,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     expect(res.redirect).toHaveBeenCalledWith(asset.previewUrl);
   });
 
-  it('turi grąžinti klaidą, kai preview failas nerastas', async () => {
+  it('should fail when preview file is missing', async () => {
     const asset = {
       id: 'asset-1',
       previewUrl: null,
@@ -353,7 +352,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     );
   });
 
-  it('turi ištrinti kūrinį, kai jis priklauso vartotojui', async () => {
+  it('should delete an owned asset', async () => {
     const asset = {
       id: 'asset-1',
       artistId: 'artist-1',
@@ -373,7 +372,7 @@ describe('AssetsService kūrinių valdymo logika', () => {
     });
   });
 
-  it('turi grąžinti klaidą, kai vartotojas bando ištrinti ne savo kūrinį', async () => {
+  it('should fail when deleting another users asset', async () => {
     const asset = {
       id: 'asset-1',
       artistId: 'artist-2',
@@ -386,11 +385,68 @@ describe('AssetsService kūrinių valdymo logika', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('turi grąžinti klaidą, kai šalinamas kūrinys nerastas', async () => {
+  it('should fail when deleting a missing asset', async () => {
     mockPrismaService.asset.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.remove('nerastas-id', { userId: 'artist-1' }),
+      service.remove('missing-id', { userId: 'artist-1' }),
     ).rejects.toThrow(NotFoundException);
+  });
+
+  it('should update asset details and license fields', async () => {
+    mockPrismaService.asset.findUnique.mockResolvedValue({
+      id: 'asset-1',
+      artistId: 'artist-1',
+      licenses: [
+        {
+          id: 'asset-license-1',
+          licenseId: 'license-1',
+        },
+      ],
+    });
+
+    mockPrismaService.asset.update.mockResolvedValue({});
+    mockPrismaService.assetLicense.update.mockResolvedValue({});
+    jest.spyOn(service, 'findOne').mockResolvedValue({
+      id: 'asset-1',
+      title: 'Updated title',
+    } as any);
+
+    const result = await service.update(
+      'asset-1',
+      {
+        title: 'Updated title',
+        description: 'Updated description',
+        licenses: [
+          {
+            licenseId: 'license-1',
+            priceCents: 4900,
+            description: 'New license description',
+          },
+        ],
+      },
+      { userId: 'artist-1' },
+    );
+
+    expect(mockPrismaService.assetLicense.update).toHaveBeenCalledWith({
+      where: { id: 'asset-license-1' },
+      data: {
+        priceCents: 4900,
+        description: 'New license description',
+      },
+    });
+
+    expect(mockPrismaService.asset.update).toHaveBeenCalledWith({
+      where: { id: 'asset-1' },
+      data: {
+        title: 'Updated title',
+        description: 'Updated description',
+      },
+    });
+
+    expect(result).toEqual({
+      id: 'asset-1',
+      title: 'Updated title',
+    });
   });
 });
