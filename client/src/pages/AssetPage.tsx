@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { deleteAsset, getAssetById, updateAsset } from '../api/assetsApi';
-import { getUser, isLoggedIn } from '../utils/auth';
+﻿import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { createPurchase } from '../api/purchasesApi';
+import { deleteAsset, getAssetById, updateAsset } from '../api/assetsApi';
 import PreviewPlayer from '../components/PreviewPlayer';
 import ChatWindow from '../components/ChatWindow';
+import { getUser, isLoggedIn } from '../utils/auth';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -100,7 +100,9 @@ export default function AssetPage() {
       }
     }
 
-    if (id) loadAsset();
+    if (id) {
+      loadAsset();
+    }
   }, [id]);
 
   const handleBuy = async (licenseId: string) => {
@@ -203,6 +205,7 @@ export default function AssetPage() {
           description: license.description.trim() || null,
         })),
       });
+
       const refreshedAsset = await getAssetById(asset.id);
       setAsset(refreshedAsset);
       setEditForm(createEditForm(refreshedAsset));
@@ -245,8 +248,44 @@ export default function AssetPage() {
 
         <div className="asset-view-main">
           <div className="asset-view-header">
-            <p className="asset-view-kicker">{asset.type || 'TRACK'}</p>
-            <h1 className="asset-view-title">{asset.title}</h1>
+            {editMode ? (
+              <>
+                <div className="asset-inline-kicker-row">
+                  <label htmlFor="asset-type" className="asset-inline-kicker-label">
+                    Tipas
+                  </label>
+                  <select
+                    id="asset-type"
+                    value={editForm.type}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        type: e.target.value as EditFormState['type'],
+                      }))
+                    }
+                    className="asset-inline-select"
+                  >
+                    <option value="TRACK">Track</option>
+                    <option value="LOOP">Loop</option>
+                    <option value="SAMPLE">Sample</option>
+                  </select>
+                </div>
+                <input
+                  value={editForm.title}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  className="asset-inline-title-input"
+                  placeholder="Pvz. Dark Trap Beat"
+                />
+              </>
+            ) : (
+              <>
+                <p className="asset-view-kicker">{asset.type || 'TRACK'}</p>
+                <h1 className="asset-view-title">{asset.title}</h1>
+              </>
+            )}
+
             <div className="asset-view-meta-row">
               <p className="asset-view-artist">Autorius: {asset.artist.displayName}</p>
 
@@ -290,60 +329,11 @@ export default function AssetPage() {
             </div>
           </div>
 
-          {!editMode && (
-            <>
-              <div className="asset-view-tags">
-                {asset.genre && <span className="asset-tag">{asset.genre}</span>}
-                {asset.bpm && <span className="asset-tag">{asset.bpm} BPM</span>}
-                {asset.musicalKey && <span className="asset-tag">{asset.musicalKey}</span>}
-                {asset.durationSec && <span className="asset-tag">{asset.durationSec} s</span>}
-              </div>
-
-              {(asset.description || editMode) && (
-                <div className="asset-view-description-box">
-                  <h3>Aprašymas</h3>
-                  <p>{asset.description || 'Aprašymas dar nepridėtas.'}</p>
-                </div>
-              )}
-            </>
-          )}
-
-          {editMode && (
-            <div className="asset-edit-panel">
-              <div className="asset-edit-panel-header">
-                <div>
-                  <p className="asset-edit-panel-kicker">Redagavimas</p>
-                  <h3>Atnaujink kūrinio informaciją</h3>
-                </div>
-                <p className="asset-edit-panel-note">Pakeisk bazinę informaciją, licencijų aprašymus ir kainas vienoje vietoje.</p>
-              </div>
-
-              <div className="asset-edit-grid">
-                <div className="asset-edit-field asset-edit-field-wide">
-                  <label htmlFor="asset-title">Pavadinimas</label>
-                  <input
-                    id="asset-title"
-                    value={editForm.title}
-                    onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="Pvz. Dark Trap Beat"
-                  />
-                </div>
-
-                <div className="asset-edit-field">
-                  <label htmlFor="asset-type">Tipas</label>
-                  <select
-                    id="asset-type"
-                    value={editForm.type}
-                    onChange={(e) => setEditForm((prev) => ({ ...prev, type: e.target.value as EditFormState['type'] }))}
-                  >
-                    <option value="TRACK">Track</option>
-                    <option value="LOOP">Loop</option>
-                    <option value="SAMPLE">Sample</option>
-                  </select>
-                </div>
-
-                <div className="asset-edit-field">
-                  <label htmlFor="asset-genre">Zanras</label>
+          <div className="asset-view-tags">
+            {editMode ? (
+              <div className="asset-inline-meta-grid">
+                <div className="asset-edit-field asset-edit-field-genre">
+                  <label htmlFor="asset-genre">Žanras</label>
                   <input
                     id="asset-genre"
                     value={editForm.genre}
@@ -351,8 +341,7 @@ export default function AssetPage() {
                     placeholder="Pvz. Trap"
                   />
                 </div>
-
-                <div className="asset-edit-field">
+                <div className="asset-edit-field asset-edit-field-bpm">
                   <label htmlFor="asset-bpm">BPM</label>
                   <input
                     id="asset-bpm"
@@ -363,8 +352,7 @@ export default function AssetPage() {
                     placeholder="140"
                   />
                 </div>
-
-                <div className="asset-edit-field">
+                <div className="asset-edit-field asset-edit-field-key">
                   <label htmlFor="asset-key">Tonacija</label>
                   <input
                     id="asset-key"
@@ -373,9 +361,8 @@ export default function AssetPage() {
                     placeholder="C#m"
                   />
                 </div>
-
-                <div className="asset-edit-field">
-                  <label htmlFor="asset-duration">Trukme sekundemis</label>
+                <div className="asset-edit-field asset-edit-field-duration">
+                  <label htmlFor="asset-duration">Trukmė sekundėmis</label>
                   <input
                     id="asset-duration"
                     type="number"
@@ -385,9 +372,22 @@ export default function AssetPage() {
                     placeholder="120"
                   />
                 </div>
+              </div>
+            ) : (
+              <>
+                {asset.genre && <span className="asset-tag">{asset.genre}</span>}
+                {asset.bpm && <span className="asset-tag">{asset.bpm} BPM</span>}
+                {asset.musicalKey && <span className="asset-tag">{asset.musicalKey}</span>}
+                {asset.durationSec && <span className="asset-tag">{asset.durationSec} s</span>}
+              </>
+            )}
+          </div>
 
-                <div className="asset-edit-field asset-edit-field-wide">
-                  <label htmlFor="asset-description">Aprašymas</label>
+          {(asset.description || editMode) && (
+            <div className="asset-view-description-box">
+              <h3>Aprašymas</h3>
+              {editMode ? (
+                <>
                   <textarea
                     id="asset-description"
                     rows={5}
@@ -395,26 +395,27 @@ export default function AssetPage() {
                     onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
                     placeholder="Trumpai aprašyk nuotaiką, skambesį ir kam šis kūrinys labiausiai tinka."
                   />
-                </div>
-              </div>
-
-              <div className="asset-edit-footer">
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="asset-action-button asset-action-button-secondary"
-                >
-                  Atšaukti pakeitimus
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="asset-action-button asset-action-button-primary"
-                >
-                  {isSaving ? 'Saugoma...' : 'Išsaugoti pakeitimus'}
-                </button>
-              </div>
+                  <div className="asset-edit-footer">
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="asset-action-button asset-action-button-secondary"
+                    >
+                      Atšaukti pakeitimus
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="asset-action-button asset-action-button-primary"
+                    >
+                      {isSaving ? 'Saugoma...' : 'Išsaugoti pakeitimus'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p>{asset.description || 'Aprašymas dar nepridėtas.'}</p>
+              )}
             </div>
           )}
 
@@ -428,7 +429,11 @@ export default function AssetPage() {
       <section className="asset-view-licenses-section">
         <div className="section-header">
           <h2>Licencijos</h2>
-          {editMode && <p className="asset-license-edit-hint">Čia gali redaguoti kiekvienos licencijos kainą ir jos aprašymą.</p>}
+          {editMode && (
+            <p className="asset-license-edit-hint">
+              Čia gali redaguoti kiekvienos licencijos kainą ir jos aprašymą.
+            </p>
+          )}
         </div>
 
         <div className="asset-license-list">
@@ -517,6 +522,3 @@ export default function AssetPage() {
     </div>
   );
 }
-
-
-
