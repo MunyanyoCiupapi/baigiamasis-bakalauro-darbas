@@ -105,7 +105,7 @@ export default function AssetPage() {
     }
   }, [id]);
 
-  const handleBuy = async (licenseId: string) => {
+ const handleBuy = async (licenseId: string) => {
     if (!loggedIn) {
       setError('Norėdami pirkti, turite prisijungti');
       return;
@@ -115,8 +115,15 @@ export default function AssetPage() {
       setError('');
       setMessage('Nukreipiama į saugų apmokėjimo langą...');
       const result = await createPurchase({ assetId: asset.id, licenseId });
+      
       if (result.checkoutUrl) {
-        window.location.href = result.checkoutUrl;
+        const parsedUrl = new URL(result.checkoutUrl, window.location.origin);
+        
+        if (parsedUrl.protocol === 'https:') {
+          window.location.href = parsedUrl.toString();
+        } else {
+          throw new Error('Nepatikimas nukreipimo adresas.');
+        }
       } else {
         setMessage(result.message || 'Pirkimas sėkmingas');
       }
