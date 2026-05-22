@@ -1,0 +1,91 @@
+import { getToken } from '../utils/auth';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+export async function createPurchase(data: {
+  assetId: string;
+  licenseId: string;
+}) {
+  const token = getToken();
+
+  const response = await fetch(`${API_URL}/purchases`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Nepavyko sukurti pirkimo');
+  }
+
+  return result;
+}
+
+export async function getMyPurchases() {
+  const token = getToken();
+
+  const response = await fetch(`${API_URL}/purchases/me`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Nepavyko gauti pirkimų');
+  }
+
+  return result;
+}
+
+export async function downloadPurchaseFile(purchaseId: string) {
+  const token = getToken();
+
+  const response = await fetch(`${API_URL}/purchases/${purchaseId}/download`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    let message = 'Nepavyko atsisiųsti failo';
+
+    try {
+      const result = await response.json();
+      message = result.message || message;
+    } catch {
+      
+    }
+
+    throw new Error(message);
+  }
+
+  return response.blob();
+}
+
+export async function getMySales() {
+  const token = getToken();
+  
+  const response = await fetch(`${API_URL}/purchases/sales`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Nepavyko užkrauti pardavimų');
+  }
+
+  return result;
+}

@@ -115,15 +115,8 @@ export default function AssetPage() {
       setError('');
       setMessage('Nukreipiama į saugų apmokėjimo langą...');
       const result = await createPurchase({ assetId: asset.id, licenseId });
-      
       if (result.checkoutUrl) {
-        const parsedUrl = new URL(result.checkoutUrl, window.location.origin);
-        
-        if (parsedUrl.protocol === 'https:') {
-          window.location.href = parsedUrl.toString();
-        } else {
-          throw new Error('Nepatikimas nukreipimo adresas.');
-        }
+        window.location.href = result.checkoutUrl;
       } else {
         setMessage(result.message || 'Pirkimas sėkmingas');
       }

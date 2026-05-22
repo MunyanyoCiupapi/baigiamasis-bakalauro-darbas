@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate --schema=prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test?schema=public
+          JWT_SECRET: testsecret
+          JWT_EXPIRES_IN: 7d
+
+      - name: Prisma validate
+        run: npx prisma validate --schema=prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test?schema=public
+          JWT_SECRET: testsecret
+          JWT_EXPIRES_IN: 7d
+
+      - name: Build server
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test?schema=public
+          JWT_SECRET: testsecret
+          JWT_EXPIRES_IN: 7d
+
+  client:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        run: npm ci
+
+      - name: Build client
+        run: npm run build
